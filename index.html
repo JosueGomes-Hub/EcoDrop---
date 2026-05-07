@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AmazonViva</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- SPLASH -->
+  <div class="screen active" id="splash">
+    <div class="splash-circles"><div class="sc sc1"></div><div class="sc sc2"></div><div class="sc sc3"></div></div>
+    <div class="splash-body">
+      <div class="splash-ico">🌿</div>
+      <div class="splash-logo">Amazon<span>Viva</span></div>
+      <div class="splash-pill">Recicle · Ganhe · Preserve</div>
+      <div class="splash-desc">Leve seu material reciclável aos pontos de coleta e ganhe VoucherVerde para usar onde quiser.</div>
+      <div class="splash-btns">
+        <button class="btn-primary" onclick="goTo('login')">Entrar na minha conta</button>
+        <button class="btn-ghost" onclick="goTo('cadastro')">Criar conta gratuita</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen" id="login">
+    <div class="auth-hd">
+      <button class="back-btn" onclick="goTo('splash')">←</button>
+      <h1>Bem-vindo de volta 👋</h1>
+      <p>Entre na sua conta AmazonViva</p>
+    </div>
+    <div class="auth-body">
+      <div class="fg"><label>E-MAIL</label><input type="email" placeholder="seu@email.com" id="l-email"/></div>
+      <div class="fg"><label>SENHA</label><input type="password" placeholder="••••••••" id="l-senha"/></div>
+      <button class="btn-primary" onclick="fazerLogin()" style="margin-top:6px">Entrar</button>
+      <div class="divider">ou</div>
+      <div class="auth-ft">Não tem conta? <button class="link-btn" onclick="goTo('cadastro')">Cadastre-se grátis</button></div>
+    </div>
+  </div>
+
+  <!-- CADASTRO -->
+  <div class="screen" id="cadastro">
+    <div class="auth-hd">
+      <button class="back-btn" onclick="goTo('splash')">←</button>
+      <h1>Criar conta 🌱</h1>
+      <p>Comece a reciclar e ganhar VoucherVerde</p>
+    </div>
+    <div class="auth-body">
+      <div class="fr">
+        <div class="fg"><label>NOME</label><input type="text" placeholder="Nome" id="c-nome"/></div>
+        <div class="fg"><label>SOBRENOME</label><input type="text" placeholder="Sobrenome" id="c-sob"/></div>
+      </div>
+      <div class="fg"><label>CPF</label><input type="text" placeholder="000.000.000-00" id="c-cpf" maxlength="14" oninput="mCPF(this)"/></div>
+      <div class="fg"><label>CELULAR</label><input type="text" placeholder="(00) 00000-0000" id="c-tel" maxlength="15" oninput="mTel(this)"/></div>
+      <div class="fg"><label>CEP</label><input type="text" placeholder="00000-000" id="c-cep" maxlength="9" oninput="mCEP(this)"/></div>
+      <div class="fr">
+        <div class="fg"><label>CIDADE</label><input type="text" placeholder="Manaus" id="c-cid"/></div>
+        <div class="fg"><label>ESTADO</label>
+          <select id="c-est">
+            <option>AM</option><option>PA</option><option>RO</option><option>AC</option><option>RR</option>
+            <option>AP</option><option>TO</option><option>SP</option><option>RJ</option><option>MG</option>
+            <option>BA</option><option>PR</option><option>RS</option><option>SC</option><option>GO</option>
+            <option>DF</option><option>MT</option><option>MS</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>E-MAIL</label><input type="email" placeholder="seu@email.com" id="c-email"/></div>
+      <div class="fg"><label>SENHA</label><input type="password" placeholder="Mínimo 8 caracteres" id="c-senha"/></div>
+      <button class="btn-primary" onclick="fazerCadastro()" style="margin-top:6px">Criar minha conta</button>
+      <div class="auth-ft" style="margin-top:12px">Já tem conta? <button class="link-btn" onclick="goTo('login')">Entrar</button></div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="home">
+    <div class="home-hd">
+      <div class="home-top">
+        <div class="home-logo">Amazon<span>Viva</span></div>
+        <div class="notif-btn">🔔<div class="notif-dot"></div></div>
+      </div>
+      <div class="home-greet">Olá, <span id="home-nome">Usuário</span> 👋</div>
+      <div class="home-name">Sua floresta agradece!</div>
+    </div>
+    <div class="voucher-card">
+      <div class="vc-lbl">VoucherVerde Disponível</div>
+      <div class="vc-val">R$ <span id="saldo-h">47,50</span></div>
+      <div class="vc-sub">+R$ 12,50 este mês · Nível 4 🌿</div>
+      <div class="vc-badge"><div class="bi">♻️</div><div class="bt">Ativo</div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-c"><div class="sn">12</div><div class="sl">Entregas</div></div>
+      <div class="stat-c"><div class="sn">38 kg</div><div class="sl">Reciclado</div></div>
+      <div class="stat-c"><div class="sn">4</div><div class="sl">Nível</div></div>
+    </div>
+    <div class="hscroll">
+      <div class="sec-t">🎯 Missões Ativas</div>
+      <div class="mc" onclick="openMissao('plastic')">
+        <div class="mi" style="background:#e8f5ee">♻️</div>
+        <div class="minfo"><h3>Recicle 2kg de Plástico</h3><div class="pb"><div class="pf" style="width:60%"></div></div><p>1,2 kg / 2,0 kg entregues</p></div>
+        <div class="mpts">+R$5</div>
+      </div>
+      <div class="mc" onclick="openMissao('vidro')">
+        <div class="mi" style="background:#e3f4fb">🔵</div>
+        <div class="minfo"><h3>Levar Vidro ao Ponto</h3><div class="pb"><div class="pf" style="width:0%"></div></div><p>Não iniciada — Bônus triplo!</p></div>
+        <div class="mpts">+R$9</div>
+      </div>
+      <div class="mc" onclick="openMissao('eletro')">
+        <div class="mi" style="background:#fdf0e6">🔋</div>
+        <div class="minfo"><h3>Descarte Eletrônico</h3><div class="pb"><div class="pf" style="width:30%"></div></div><p>1 de 3 itens entregues</p></div>
+        <div class="mpts">+R$15</div>
+      </div>
+      <div class="sec-t">🔥 Bônus do Mês</div>
+      <div class="mc">
+        <div class="mi" style="background:#fff3e0">🏆</div>
+        <div class="minfo"><h3>Meta: 10 kg em Abril</h3><div class="pb"><div class="pf" style="width:38%"></div></div><p>3,8 kg / 10 kg — Bônus R$20</p></div>
+        <div class="mpts">+R$20</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div class="screen" id="mapa">
+    <div class="mapa-hd">
+      <h1>🗺️ Pontos de Coleta</h1>
+      <p>Leve, recicle e ganhe VoucherVerde</p>
+    </div>
+    <div class="filtros">
+      <div class="chip active" onclick="setChip(this)">Todos</div>
+      <div class="chip" onclick="setChip(this)">♻️ Plástico</div>
+      <div class="chip" onclick="setChip(this)">🔵 Vidro</div>
+      <div class="chip" onclick="setChip(this)">🥫 Metal</div>
+      <div class="chip" onclick="setChip(this)">📄 Papel</div>
+      <div class="chip" onclick="setChip(this)">🔋 Eletrônico</div>
+    </div>
+    <div class="fake-map">
+      <div class="mtex"></div>
+      <div class="mr mrh" style="top:68px"></div>
+      <div class="mr mrh" style="top:136px"></div>
+      <div class="mr mrv" style="left:96px"></div>
+      <div class="mr mrv" style="left:256px"></div>
+      <div class="mpin verde" style="top:40px;left:58px" onclick="openPonto('central')"><div class="pi">♻️</div></div>
+      <div class="mpin azul"  style="top:92px;left:215px" onclick="openPonto('norte')"><div class="pi">🔵</div></div>
+      <div class="mpin terra" style="top:144px;left:66px" onclick="openPonto('sul')"><div class="pi">🔋</div></div>
+      <div class="mpin verde" style="top:46px;left:295px" onclick="openPonto('leste')"><div class="pi">♻️</div></div>
+      <div class="mpin azul"  style="top:150px;left:282px" onclick="openPonto('shop')"><div class="pi">🥫</div></div>
+      <div class="medot" style="top:104px;left:152px"></div>
+      <div class="mlbl">📍 Você está aqui</div>
+    </div>
+    <div class="pscroll">
+      <div class="pc" onclick="openPonto('central')">
+        <div class="pico" style="background:#e8f5ee">♻️</div>
+        <div class="pinfo"><h3>EcoPonto Central</h3><p>Av. Eduardo Ribeiro, 520 — Manaus</p><div class="ptags"><span class="ptag">Plástico</span><span class="ptag">Papel</span><span class="ptag">Metal</span></div></div>
+        <div class="pdist"><div class="km">0,3 km</div><div class="dt">Aberto</div><button class="ag-btn" onclick="event.stopPropagation();openAgenda('EcoPonto Central')">Agendar</button></div>
+      </div>
+      <div class="pc" onclick="openPonto('norte')">
+        <div class="pico" style="background:#e3f4fb">🔵</div>
+        <div class="pinfo"><h3>Coleta Norte</h3><p>R. Recife, 230 — Manaus</p><div class="ptags"><span class="ptag">Vidro</span><span class="ptag">Plástico</span></div></div>
+        <div class="pdist"><div class="km">0,8 km</div><div class="dt">Aberto</div><button class="ag-btn" onclick="event.stopPropagation();openAgenda('Coleta Norte')">Agendar</button></div>
+      </div>
+      <div class="pc" onclick="openPonto('sul')">
+        <div class="pico" style="background:#fdf0e6">🔋</div>
+        <div class="pinfo"><h3>Ponto Eletrônico Sul</h3><p>Av. Constantino Nery, 1200</p><div class="ptags"><span class="ptag">Eletrônico</span><span class="ptag">Bateria</span></div></div>
+        <div class="pdist"><div class="km">1,2 km</div><div class="dt">Aberto</div><button class="ag-btn" onclick="event.stopPropagation();openAgenda('Ponto Eletrônico Sul')">Agendar</button></div>
+      </div>
+      <div class="pc" onclick="openPonto('leste')">
+        <div class="pico" style="background:#e8f5ee">♻️</div>
+        <div class="pinfo"><h3>EcoPonto Leste</h3><p>R. Belo Horizonte, 88 — Manaus</p><div class="ptags"><span class="ptag">Plástico</span><span class="ptag">Papel</span></div></div>
+        <div class="pdist"><div class="km">1,9 km</div><div class="dt">Aberto</div><button class="ag-btn" onclick="event.stopPropagation();openAgenda('EcoPonto Leste')">Agendar</button></div>
+      </div>
+      <div class="pc" onclick="openPonto('shop')">
+        <div class="pico" style="background:#e3f4fb">🥫</div>
+        <div class="pinfo"><h3>Shopping Coleta</h3><p>Shopping Manauara — Piso G1</p><div class="ptags"><span class="ptag">Metal</span><span class="ptag">Vidro</span><span class="ptag">Plástico</span></div></div>
+        <div class="pdist"><div class="km">2,4 km</div><div class="dt">Aberto</div><button class="ag-btn" onclick="event.stopPropagation();openAgenda('Shopping Coleta')">Agendar</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTEIRA -->
+  <div class="screen" id="carteira">
+    <div class="cart-hd">
+      <h1>💳 Minha Carteira</h1>
+      <p>Seu VoucherVerde acumulado</p>
+    </div>
+    <div class="cart-saldo">
+      <div class="cs-lbl">VoucherVerde Disponível</div>
+      <div class="cs-val">R$ <span id="saldo-c">47,50</span></div>
+      <div class="cs-sub">Cartão virtual ativo · Nível 4 🌿</div>
+      <div class="cs-acts">
+        <button class="cs-btn" onclick="showToast('💳 Função disponível em breve!')">💳 Usar Voucher</button>
+        <button class="cs-btn" onclick="goTo('parceiros');setNav('parceiros')">🏪 Ver Parceiros</button>
+      </div>
+    </div>
+    <div class="nivel-wrap">
+      <div class="nivel-top"><h3>🌿 Nível 4 — Guardião da Floresta</h3><span>68%</span></div>
+      <div class="nbg"><div class="nfill"></div></div>
+      <div class="ndesc">340/500 pts para Nível 5 — Bônus de 20% em todos os vouchers!</div>
+    </div>
+    <div class="cscroll">
+      <div class="sec-t">📋 Histórico de Transações</div>
+      <div class="hi"><div class="hico" style="background:#e8f5ee">♻️</div><div class="hinfo"><h4>Coleta de Plástico — EcoPonto Central</h4><p>Hoje, 09:30 · Confirmado pelo ponto</p></div><div class="hval plus">+R$8,00</div></div>
+      <div class="hi"><div class="hico" style="background:#fff3e0">🏪</div><div class="hinfo"><h4>Usado em: Mercado Verde</h4><p>Ontem, 14:15 · Desconto na compra</p></div><div class="hval minus">-R$15,00</div></div>
+      <div class="hi"><div class="hico" style="background:#e8f5ee">🔵</div><div class="hinfo"><h4>Coleta de Vidro — Coleta Norte</h4><p>3 dias atrás · Confirmado</p></div><div class="hval plus">+R$12,00</div></div>
+      <div class="hi"><div class="hico" style="background:#fdf0e6">🔋</div><div class="hinfo"><h4>Eletrônico — Ponto Sul</h4><p>1 semana atrás · Confirmado</p></div><div class="hval plus">+R$20,00</div></div>
+      <div class="hi"><div class="hico" style="background:#fff3e0">💡</div><div class="hinfo"><h4>Usado em: Conta de Luz</h4><p>2 semanas atrás · Débito automático</p></div><div class="hval minus">-R$25,00</div></div>
+      <div class="hi"><div class="hico" style="background:#e8f5ee">🏆</div><div class="hinfo"><h4>Bônus Nível 4 desbloqueado</h4><p>15/03/2026 · Bônus automático</p></div><div class="hval plus">+R$10,00</div></div>
+    </div>
+  </div>
+
+  <!-- PARCEIROS -->
+  <div class="screen" id="parceiros">
+    <div class="parc-hd">
+      <h1>🏪 Parceiros</h1>
+      <p>Use seu VoucherVerde nestes estabelecimentos</p>
+    </div>
+    <div class="pscr2">
+      <div class="pcat">🛒 Supermercados</div>
+      <div class="parc-c" onclick="showToast('🛒 Mercado Verde — Voucher ativado!')">
+        <div class="parc-logo" style="background:#e8f5ee">🥬</div>
+        <div class="parc-inf"><h3>Mercado Verde</h3><p>Rede de supermercados sustentáveis</p><div class="parc-desc">Até 15% de desconto em compras</div></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="parc-c" onclick="showToast('🛒 Econômico — Voucher ativado!')">
+        <div class="parc-logo" style="background:#e3f4fb">🏬</div>
+        <div class="parc-inf"><h3>Supermercado Econômico</h3><p>Mais de 50 unidades no AM</p><div class="parc-desc">R$5 de desconto por visita</div></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="pcat">💡 Contas e Serviços</div>
+      <div class="parc-c" onclick="showToast('💡 Energia AM — Parceria ativada!')">
+        <div class="parc-logo" style="background:#fff3e0">⚡</div>
+        <div class="parc-inf"><h3>Energia AM</h3><p>Pague sua conta de energia</p><div class="parc-desc">Abatimento de até R$30/mês</div></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="parc-c" onclick="showToast('💧 COSAMA — Parceria ativada!')">
+        <div class="parc-logo" style="background:#e3f4fb">💧</div>
+        <div class="parc-inf"><h3>COSAMA</h3><p>Pague sua conta de água</p><div class="parc-desc">Desconto de até 20% na fatura</div></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="pcat">🍕 Alimentação</div>
+      <div class="parc-c" onclick="showToast('🍽️ RestauraNatura — Voucher ativado!')">
+        <div class="parc-logo" style="background:#fdf0e6">🍽️</div>
+        <div class="parc-inf"><h3>RestauraNatura</h3><p>Culinária amazônica sustentável</p><div class="parc-desc">10% de desconto no pedido</div></div>
+        <div class="parr">›</div>
+      </div>
+      <div class="pcat">💊 Farmácias</div>
+      <div class="parc-c" onclick="showToast('💊 FarmaVerde — Voucher ativado!')">
+        <div class="parc-logo" style="background:#e8f5ee">💊</div>
+        <div class="parc-inf"><h3>FarmaVerde</h3><p>Rede de farmácias parceiras</p><div class="parc-desc">5% em medicamentos e higiene</div></div>
+        <div class="parr">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERFIL -->
+  <div class="screen" id="perfil">
+    <div class="perf-hd">
+      <div class="perf-av">🧑‍🌿</div>
+      <div class="perf-nome" id="perf-nome">Usuário</div>
+      <div class="perf-nivel">Nível 4 · Guardião da Floresta 🌿</div>
+    </div>
+    <div class="perf-scr">
+      <div class="info-c">
+        <div class="ic-lbl">DADOS PESSOAIS</div>
+        <div class="info-r"><div class="info-ico">👤</div><div><h4 id="p-nome">Nome Completo</h4><p>Nome cadastrado</p></div></div>
+        <div class="info-r"><div class="info-ico">📧</div><div><h4 id="p-email">email@email.com</h4><p>E-mail</p></div></div>
+        <div class="info-r"><div class="info-ico">📱</div><div><h4 id="p-tel">(00) 00000-0000</h4><p>Celular</p></div></div>
+        <div class="info-r"><div class="info-ico">📍</div><div><h4 id="p-cid">Manaus — AM</h4><p>Localização</p></div></div>
+      </div>
+      <div class="info-c" style="margin-top:12px">
+        <div class="ic-lbl">MINHA CONTA</div>
+        <div class="info-r" onclick="showToast('🔔 Notificações configuradas!')"><div class="info-ico">🔔</div><div><h4>Notificações</h4><p>Vouchers e novidades</p></div></div>
+        <div class="info-r" onclick="showToast('🔒 Segurança — em breve!')"><div class="info-ico">🔒</div><div><h4>Segurança</h4><p>Alterar senha</p></div></div>
+        <div class="info-r" onclick="showToast('📄 Termos de Uso abertos!')"><div class="info-ico">📄</div><div><h4>Termos de Uso</h4><p>Política de privacidade</p></div></div>
+      </div>
+      <button class="logout-btn" onclick="fazerLogout()">Sair da conta</button>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav" id="bnav">
+    <div class="nav-item active" id="nav-home" onclick="goTo('home');setNav('home')"><div class="nav-ico">🏠</div><div class="nav-lbl">Início</div></div>
+    <div class="nav-item" id="nav-mapa" onclick="goTo('mapa');setNav('mapa')"><div class="nav-ico">🗺️</div><div class="nav-lbl">Mapa</div></div>
+    <div class="nav-item" id="nav-carteira" onclick="goTo('carteira');setNav('carteira')"><div class="nav-ico">💳</div><div class="nav-lbl">Carteira</div></div>
+    <div class="nav-item" id="nav-parceiros" onclick="goTo('parceiros');setNav('parceiros')"><div class="nav-ico">🏪</div><div class="nav-lbl">Parceiros</div></div>
+    <div class="nav-item" id="nav-perfil" onclick="goTo('perfil');setNav('perfil')"><div class="nav-ico">👤</div><div class="nav-lbl">Perfil</div></div>
+  </div>
+
+  <!-- MODAL MISSÃO -->
+  <div class="modal-ov" id="mod-missao" onclick="closeModal('mod-missao')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag" id="mm-tag"></div>
+      <h2 id="mm-titulo"></h2>
+      <p id="mm-desc"></p>
+      <div class="mmats" id="mm-mats"></div>
+      <button class="btn-primary" onclick="closeModal('mod-missao');openAgenda('EcoPonto Central')">📅 Agendar Entrega</button>
+      <button class="btn-sec" onclick="closeModal('mod-missao')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- MODAL PONTO -->
+  <div class="modal-ov" id="mod-ponto" onclick="closeModal('mod-ponto')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag" id="mp-dist"></div>
+      <h2 id="mp-nome"></h2>
+      <p id="mp-end"></p>
+      <div class="mmats" id="mp-mats"></div>
+      <button class="btn-primary" id="mp-btn">📅 Agendar Entrega</button>
+      <button class="btn-sec" onclick="closeModal('mod-ponto')">Fechar</button>
+    </div>
+  </div>
+   <!-- meu deus o que é isso -->
+  <!-- MODAL AGENDAMENTO -->
+  <div class="modal-ov" id="mod-agenda" onclick="closeModal('mod-agenda')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📅 Agendamento</div>
+      <h2 id="ag-nome">Escolha um horário</h2>
+      <p>Selecione o melhor dia e horário para levar seu material reciclável ao ponto.</p>
+      <div class="aslot" onclick="selSlot(this)"><div><h4>Amanhã — Sáb, 05/04</h4><p>08:00 às 10:00</p></div><span class="achk">✅</span></div>
+      <div class="aslot" onclick="selSlot(this)"><div><h4>Amanhã — Sáb, 05/04</h4><p>14:00 às 16:00</p></div><span class="achk">✅</span></div>
+      <div class="aslot" onclick="selSlot(this)"><div><h4>Segunda — 07/04</h4><p>09:00 às 11:00</p></div><span class="achk">✅</span></div>
+      <div class="aslot" onclick="selSlot(this)"><div><h4>Segunda — 07/04</h4><p>15:00 às 17:00</p></div><span class="achk">✅</span></div>
+      <button class="btn-primary" style="margin-top:8px" onclick="confirmarAgenda()">✅ Confirmar Agendamento</button>
+      <button class="btn-sec" onclick="closeModal('mod-agenda')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</div>
+</body>
+</html>
