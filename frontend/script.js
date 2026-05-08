@@ -1,432 +1,207 @@
-const PONTOS = {
-  central: {
-    nome: "EcoPonto Central",
-    end: "Av. Eduardo Ribeiro, 520 — Manaus",
-    dist: "0,3 km",
-    mat: ["♻️ Plástico", "📄 Papel", "🥫 Metal"],
-  },
-  norte: {
-    nome: "Coleta Norte",
-    end: "R. Recife, 230 — Manaus",
-    dist: "0,8 km",
-    mat: ["🔵 Vidro", "♻️ Plástico"],
-  },
-  sul: {
-    nome: "Ponto Eletrônico Sul",
-    end: "Av. Constantino Nery, 1200",
-    dist: "1,2 km",
-    mat: ["🔋 Eletrônico", "🔋 Bateria"],
-  },
-  leste: {
-    nome: "EcoPonto Leste",
-    end: "R. Belo Horizonte, 88 — Manaus",
-    dist: "1,9 km",
-    mat: ["♻️ Plástico", "📄 Papel"],
-  },
-  shop: {
-    nome: "Shopping Coleta",
-    end: "Shopping Manauara — Piso G1",
-    dist: "2,4 km",
-    mat: ["🥫 Metal", "🔵 Vidro", "♻️ Plástico"],
-  },
-};
+const API = "http://localhost:5000";
 
-const MISSOES = {
-  plastic: {
-    tag: "♻️ Missão Ativa",
-    titulo: "Recicle 2kg de Plástico",
-    desc: "Leve pelo menos 2kg de plástico a qualquer EcoPonto. O voucher é creditado automaticamente quando o ponto confirmar o recebimento.",
-    mat: ["♻️ Plástico"],
-  },
+let usuarioLogado = null;
 
-  vidro: {
-    tag: "🔵 Bônus Triplo",
-    titulo: "Levar Vidro ao Ponto",
-    desc: "Leve qualquer quantidade de vidro ao Coleta Norte ou Shopping Coleta.",
-    mat: ["🔵 Vidro"],
-  },
-
-  eletro: {
-    tag: "🔋 Missão Ativa",
-    titulo: "Descarte Eletrônico",
-    desc: "Leve eletrônicos ao Ponto Sul e ganhe VoucherVerde automaticamente.",
-    mat: ["🔋 Eletrônico", "🔋 Bateria"],
-  },
-};
-
-let user = {};
-let slotSel = null;
-
-/* =========================
-   NAVEGAÇÃO
-========================= */
-
+// NAVEGAÇÃO
 function goTo(id) {
-  document.querySelectorAll(".screen").forEach((s) => {
-    s.classList.remove("active");
-  });
+  document
+    .querySelectorAll(".screen")
+    .forEach((s) => s.classList.remove("active"));
 
   document.getElementById(id).classList.add("active");
 
   const nav = document.getElementById("bnav");
 
-  if (["splash", "login", "cadastro"].includes(id)) {
-    nav.classList.remove("show");
+  if (
+    id === "home" ||
+    id === "mapa" ||
+    id === "carteira" ||
+    id === "perfil" ||
+    id === "parceiros"
+  ) {
+    nav.style.display = "flex";
   } else {
-    nav.classList.add("show");
+    nav.style.display = "none";
   }
 }
 
-function setNav(id) {
-  document.querySelectorAll(".nav-item").forEach((n) => {
-    n.classList.remove("active");
-  });
+// TOAST
+function showToast(msg) {
+  const toast = document.getElementById("toast");
 
-  const el = document.getElementById("nav-" + id);
+  toast.innerText = msg;
+  toast.style.opacity = "1";
 
-  if (el) {
-    el.classList.add("active");
+  setTimeout(() => {
+    toast.style.opacity = "0";
+  }, 3000);
+}
+
+// CADASTRO
+async function fazerCadastro() {
+  const nome =
+    document.getElementById("c-nome").value +
+    " " +
+    document.getElementById("c-sob").value;
+
+  const email =
+    document.getElementById("c-email").value;
+
+  const senha =
+    document.getElementById("c-senha").value;
+
+  const telefone =
+    document.getElementById("c-tel").value;
+
+  const cidade =
+    document.getElementById("c-cid").value;
+
+  try {
+    const response = await axios.post(
+      `${API}/cadastro`,
+      {
+        nome,
+        email,
+        senha,
+        telefone,
+        cidade,
+      }
+    );
+
+    showToast("✅ Conta criada com sucesso!");
+
+    goTo("login");
+  } catch (error) {
+    console.log(error);
+
+    showToast("❌ Erro ao cadastrar");
   }
 }
 
-/* =========================
-   LOCAL STORAGE
-========================= */
+// LOGIN
+async function fazerLogin() {
+  const email =
+    document.getElementById("l-email").value;
 
-function salvarUsuario() {
-  localStorage.setItem("amazonviva_user", JSON.stringify(user));
-}
+  const senha =
+    document.getElementById("l-senha").value;
 
-function carregarUsuario() {
-  const dados = localStorage.getItem("amazonviva_user");
+  try {
+    const response = await axios.post(
+      `${API}/login`,
+      {
+        email,
+        senha,
+      }
+    );
 
-  if (dados) {
-    user = JSON.parse(dados);
+    usuarioLogado = response.data.usuario;
 
-    updateUI();
+    localStorage.setItem(
+      "usuario",
+      JSON.stringify(usuarioLogado)
+    );
+
+    carregarUsuario();
+
+    showToast("✅ Login realizado!");
 
     goTo("home");
+  } catch (error) {
+    console.log(error);
 
-    setNav("home");
-
-    showToast("👋 Login restaurado!");
+    showToast("❌ Email ou senha inválidos");
   }
 }
 
-/* =========================
-   LOGIN
-========================= */
+// CARREGAR USUÁRIO
+function carregarUsuario() {
+  const user = JSON.parse(
+    localStorage.getItem("usuario")
+  );
 
-function fazerLogin() {
-  const email = document.getElementById("l-email").value.trim();
+  if (!user) return;
 
-  const senha = document.getElementById("l-senha").value;
+  document.getElementById(
+    "home-nome"
+  ).innerText = user.nome;
 
-  if (!email || !senha) {
-    showToast("⚠️ Preencha e-mail e senha!");
-    return;
-  }
+  document.getElementById(
+    "perf-nome"
+  ).innerText = user.nome;
 
-  const salvo = localStorage.getItem("amazonviva_user");
+  document.getElementById(
+    "p-nome"
+  ).innerText = user.nome;
 
-  if (!salvo) {
-    showToast("⚠️ Nenhuma conta cadastrada!");
-    return;
-  }
+  document.getElementById(
+    "p-email"
+  ).innerText = user.email;
 
-  const usuarioSalvo = JSON.parse(salvo);
+  document.getElementById(
+    "p-tel"
+  ).innerText = user.telefone || "";
 
-  if (usuarioSalvo.email !== email || usuarioSalvo.senha !== senha) {
-    showToast("❌ E-mail ou senha incorretos!");
-    return;
-  }
-
-  user = usuarioSalvo;
-
-  updateUI();
-
-  goTo("home");
-
-  setNav("home");
-
-  showToast("✅ Bem-vindo de volta!");
+  document.getElementById(
+    "p-cid"
+  ).innerText = user.cidade || "";
 }
 
-/* =========================
-   CADASTRO
-========================= */
-
-function fazerCadastro() {
-  const nome = document.getElementById("c-nome").value.trim();
-
-  const sob = document.getElementById("c-sob").value.trim();
-
-  const cpf = document.getElementById("c-cpf").value.trim();
-
-  const tel = document.getElementById("c-tel").value.trim();
-
-  const email = document.getElementById("c-email").value.trim();
-
-  const senha = document.getElementById("c-senha").value;
-
-  const cid = document.getElementById("c-cid").value.trim() || "Manaus";
-
-  const est = document.getElementById("c-est").value;
-
-  if (!nome || !sob || !cpf || !tel || !email || !senha) {
-    showToast("⚠️ Preencha todos os campos!");
-    return;
-  }
-
-  if (senha.length < 8) {
-    showToast("⚠️ Senha: mínimo 8 caracteres!");
-    return;
-  }
-
-  user = {
-    nome,
-    sobrenome: sob,
-    cpf,
-    tel,
-    cidade: cid,
-    estado: est,
-    email,
-    senha,
-  };
-
-  salvarUsuario();
-
-  updateUI();
-
-  goTo("home");
-
-  setNav("home");
-
-  showToast("🌿 Conta criada com sucesso!");
-}
-
-/* =========================
-   ATUALIZAR TELA
-========================= */
-
-function updateUI() {
-  const p = user.nome || "Usuário";
-
-  const full = (user.nome + " " + (user.sobrenome || "")).trim();
-
-  document.getElementById("home-nome").textContent = p;
-
-  document.getElementById("perf-nome").textContent = full || p;
-
-  document.getElementById("p-nome").textContent = full || p;
-
-  document.getElementById("p-email").textContent = user.email || "";
-
-  document.getElementById("p-tel").textContent = user.tel || "";
-
-  document.getElementById("p-cid").textContent =
-    `${user.cidade || "Manaus"} — ${user.estado || "AM"}`;
-}
-
-/* =========================
-   LOGOUT
-========================= */
-
+// LOGOUT
 function fazerLogout() {
-  localStorage.removeItem("amazonviva_user");
+  localStorage.removeItem("usuario");
 
-  user = {};
+  usuarioLogado = null;
 
-  document.getElementById("l-email").value = "";
+  showToast("👋 Logout realizado");
 
-  document.getElementById("l-senha").value = "";
-
-  goTo("splash");
-
-  showToast("👋 Logout realizado!");
+  goTo("login");
 }
 
-/* =========================
-   MÁSCARAS
-========================= */
+// NAVBAR
+function setNav(id) {
+  document
+    .querySelectorAll(".nav-item")
+    .forEach((item) =>
+      item.classList.remove("active")
+    );
 
-function mCPF(i) {
-  let v = i.value.replace(/\D/g, "");
+  document
+    .getElementById(`nav-${id}`)
+    .classList.add("active");
+}
 
-  if (v.length > 11) {
-    v = v.slice(0, 11);
-  }
-
-  v = v
+// MÁSCARAS
+function mCPF(el) {
+  el.value = el.value
+    .replace(/\D/g, "")
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-
-  i.value = v;
 }
 
-function mTel(i) {
-  let v = i.value.replace(/\D/g, "");
-
-  if (v.length > 11) {
-    v = v.slice(0, 11);
-  }
-
-  if (v.length <= 10) {
-    v = v.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
-  } else {
-    v = v.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
-  }
-
-  i.value = v;
+function mTel(el) {
+  el.value = el.value
+    .replace(/\D/g, "")
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
 }
 
-function mCEP(i) {
-  let v = i.value.replace(/\D/g, "");
-
-  if (v.length > 8) {
-    v = v.slice(0, 8);
-  }
-
-  v = v.replace(/(\d{5})(\d)/, "$1-$2");
-
-  i.value = v;
+function mCEP(el) {
+  el.value = el.value
+    .replace(/\D/g, "")
+    .replace(/(\d{5})(\d)/, "$1-$2");
 }
 
-/* =========================
-   MISSÕES
-========================= */
-
-function openMissao(id) {
-  const m = MISSOES[id];
-
-  document.getElementById("mm-tag").textContent = m.tag;
-
-  document.getElementById("mm-titulo").textContent = m.titulo;
-
-  document.getElementById("mm-desc").textContent = m.desc;
-
-  document.getElementById("mm-mats").innerHTML = m.mat
-    .map((x) => `<div class="mat-chip">${x}</div>`)
-    .join("");
-
-  openModal("mod-missao");
-}
-
-/* =========================
-   PONTOS
-========================= */
-
-function openPonto(id) {
-  const p = PONTOS[id];
-
-  document.getElementById("mp-dist").textContent = "📍 " + p.dist + " de você";
-
-  document.getElementById("mp-nome").textContent = p.nome;
-
-  document.getElementById("mp-end").textContent = p.end;
-
-  document.getElementById("mp-mats").innerHTML = p.mat
-    .map((x) => `<div class="mat-chip">${x}</div>`)
-    .join("");
-
-  document.getElementById("mp-btn").onclick = () => {
-    closeModal("mod-ponto");
-
-    openAgenda(p.nome);
-  };
-
-  openModal("mod-ponto");
-}
-
-/* =========================
-   AGENDAMENTO
-========================= */
-
-function openAgenda(nome) {
-  document.getElementById("ag-nome").textContent = nome || "Ponto de Coleta";
-
-  slotSel = null;
-
-  document.querySelectorAll(".aslot").forEach((s) => {
-    s.classList.remove("sel");
-  });
-
-  openModal("mod-agenda");
-}
-
-function selSlot(el) {
-  document.querySelectorAll(".aslot").forEach((s) => {
-    s.classList.remove("sel");
-  });
-
-  el.classList.add("sel");
-
-  slotSel =
-    el.querySelector("h4").textContent +
-    " — " +
-    el.querySelector("p").textContent;
-}
-
-function confirmarAgenda() {
-  if (!slotSel) {
-    showToast("⚠️ Escolha um horário!");
-    return;
-  }
-
-  closeModal("mod-agenda");
-
-  showToast("✅ Agendado: " + slotSel);
-}
-
-/* =========================
-   MODAIS
-========================= */
-
-function openModal(id) {
-  document.getElementById(id).classList.add("open");
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove("open");
-}
-
-/* =========================
-   FILTROS
-========================= */
-
-function setChip(el) {
-  document.querySelectorAll(".chip").forEach((c) => {
-    c.classList.remove("active");
-  });
-
-  el.classList.add("active");
-}
-
-/* =========================
-   TOAST
-========================= */
-
-let tTimer;
-
-function showToast(msg) {
-  const t = document.getElementById("toast");
-
-  t.textContent = msg;
-
-  t.classList.add("show");
-
-  clearTimeout(tTimer);
-
-  tTimer = setTimeout(() => {
-    t.classList.remove("show");
-  }, 2800);
-}
-
-/* =========================
-   AUTO LOGIN
-========================= */
-
+// AUTO LOGIN
 window.onload = () => {
-  carregarUsuario();
+  const user = localStorage.getItem("usuario");
+
+  if (user) {
+    carregarUsuario();
+
+    goTo("home");
+  } else {
+    goTo("splash");
+  }
 };
