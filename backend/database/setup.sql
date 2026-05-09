@@ -1,6 +1,10 @@
 
+-- Script de configuração inicial do banco de dados para o sistema Ecodrop
+CREATE DATABASE IF NOT EXISTS ecodrop;
+
+-- Criação das tabelas principais para o sistema de reciclagem Ecodrop
+USE ecodrop;
 CREATE TABLE IF NOT EXISTS usuarios (
-"CREATE DATABASE IF NOT EXISTS ecodrop;"
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
