@@ -2,6 +2,24 @@ const API = "http://localhost:5000";
 
 let usuarioLogado = null;
 
+async function apiPost(path, data) {
+  const response = await fetch(`${API}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const body = await response.json();
+
+  if (!response.ok) {
+    throw body;
+  }
+
+  return body;
+}
+
 // NAVEGAÇÃO
 function goTo(id) {
   document
@@ -40,9 +58,13 @@ function showToast(msg) {
 // CADASTRO
 async function fazerCadastro() {
   const nome =
-    document.getElementById("c-nome").value +
-    " " +
+    document.getElementById("c-nome").value;
+
+  const sobrenome =
     document.getElementById("c-sob").value;
+
+  const cpf =
+    document.getElementById("c-cpf").value;
 
   const email =
     document.getElementById("c-email").value;
@@ -53,20 +75,27 @@ async function fazerCadastro() {
   const telefone =
     document.getElementById("c-tel").value;
 
+  const cep =
+    document.getElementById("c-cep").value;
+
   const cidade =
     document.getElementById("c-cid").value;
 
+  const estado =
+    document.getElementById("c-est").value;
+
   try {
-    const response = await axios.post(
-      `${API}/cadastro`,
-      {
-        nome,
-        email,
-        senha,
-        telefone,
-        cidade,
-      }
-    );
+    await apiPost("/cadastro", {
+      nome,
+      sobrenome,
+      cpf,
+      email,
+      senha,
+      telefone,
+      cep,
+      cidade,
+      estado,
+    });
 
     showToast("✅ Conta criada com sucesso!");
 
@@ -87,15 +116,12 @@ async function fazerLogin() {
     document.getElementById("l-senha").value;
 
   try {
-    const response = await axios.post(
-      `${API}/login`,
-      {
-        email,
-        senha,
-      }
-    );
+    const data = await apiPost("/login", {
+      email,
+      senha,
+    });
 
-    usuarioLogado = response.data.usuario;
+    usuarioLogado = data.usuario;
 
     localStorage.setItem(
       "usuario",

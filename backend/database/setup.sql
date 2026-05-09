@@ -1,10 +1,17 @@
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    sobrenome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(20) NOT NULL UNIQUE,
+    telefone VARCHAR(20),
+    cep VARCHAR(10),
+    cidade VARCHAR(100),
+    estado VARCHAR(10),
+    email VARCHAR(150) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
-    pontos INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    saldo DECIMAL(10,2) DEFAULT 0.00,
+    nivel INT DEFAULT 1,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reciclagens (
