@@ -1,8 +1,8 @@
 const API = window.location.port === "5000"
   ? window.location.origin
   : `${window.location.protocol}//${window.location.hostname}:5000`;
-const STORAGE_TOKEN_KEY = "amazonviva_token";
-const STORAGE_USER_KEY = "amazonviva_user";
+const STORAGE_TOKEN_KEY = "ecodrop_token";
+const STORAGE_USER_KEY = "ecodrop_user";
 
 const DEFAULT_POINTS = {
   "ecoponto-central": {
