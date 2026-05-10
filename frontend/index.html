@@ -201,7 +201,15 @@
       <div class="hd-row" style="justify-content:center;margin-bottom:14px">
         <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
       </div>
-      <div class="perf-av">🧑‍🌿</div>
+      <button class="perf-av" type="button" onclick="openProfilePhotoPicker()" aria-label="Alterar foto de perfil">
+        <span id="profile-photo-placeholder">🧑‍🌿</span>
+        <img id="profile-photo-preview" alt="Foto de perfil"/>
+      </button>
+      <input id="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp" onchange="alterarFotoPerfil(event)" hidden/>
+      <div class="profile-photo-actions">
+        <button type="button" onclick="openProfilePhotoPicker()">Alterar foto</button>
+        <button type="button" id="profile-photo-remove" onclick="removerFotoPerfil()">Remover</button>
+      </div>
       <div class="perf-nome" id="perf-nome">Usuário</div>
       <div class="perf-nivel" id="perf-nivel">Nível 1 · Semente da Floresta 🌿</div>
     </div>

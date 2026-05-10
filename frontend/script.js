@@ -3,6 +3,8 @@ const API = window.location.port === "5000"
   : `${window.location.protocol}//${window.location.hostname}:5000`;
 const STORAGE_TOKEN_KEY = "ecodrop_token";
 const STORAGE_USER_KEY = "ecodrop_user";
+const STORAGE_PROFILE_PHOTO_PREFIX = "ecodrop_profile_photo_";
+const MAX_PROFILE_PHOTO_SIZE = 2 * 1024 * 1024;
 
 const DEFAULT_POINTS = {
   "ecoponto-central": {
@@ -102,6 +104,10 @@ function saveSession(token, user) {
 function clearSession() {
   localStorage.removeItem(STORAGE_TOKEN_KEY);
   localStorage.removeItem(STORAGE_USER_KEY);
+}
+
+function getProfilePhotoKey(user = usuarioLogado || getStoredUser()) {
+  return `${STORAGE_PROFILE_PHOTO_PREFIX}${user?.id || "guest"}`;
 }
 
 function getStoredUser() {
@@ -294,6 +300,83 @@ function getLevelLabel(user) {
   return `Nível ${user.nivel} · ${user.levelTitle} 🌿`;
 }
 
+function updateProfilePhoto(user = usuarioLogado || getStoredUser()) {
+  const avatar = document.getElementById("profile-photo-preview")?.parentElement;
+  const preview = document.getElementById("profile-photo-preview");
+  const removeButton = document.getElementById("profile-photo-remove");
+
+  if (!avatar || !preview) {
+    return;
+  }
+
+  const photo = localStorage.getItem(getProfilePhotoKey(user));
+
+  if (photo) {
+    preview.src = photo;
+    avatar.classList.add("has-photo");
+  } else {
+    preview.removeAttribute("src");
+    avatar.classList.remove("has-photo");
+  }
+
+  if (removeButton) {
+    removeButton.disabled = !photo;
+  }
+}
+
+function openProfilePhotoPicker() {
+  if (!getProfileFormUser()) {
+    showToast("Faça login para alterar sua foto.");
+    goTo("login");
+    return;
+  }
+
+  document.getElementById("profile-photo-input")?.click();
+}
+
+function alterarFotoPerfil(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+
+  if (!file) {
+    return;
+  }
+
+  if (!file.type.startsWith("image/")) {
+    showToast("Escolha um arquivo de imagem.");
+    input.value = "";
+    return;
+  }
+
+  if (file.size > MAX_PROFILE_PHOTO_SIZE) {
+    showToast("Escolha uma imagem de até 2 MB.");
+    input.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    localStorage.setItem(getProfilePhotoKey(), reader.result);
+    updateProfilePhoto();
+    input.value = "";
+    showToast("Foto de perfil atualizada.");
+  };
+
+  reader.onerror = () => {
+    input.value = "";
+    showToast("Não foi possível carregar a imagem.");
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function removerFotoPerfil() {
+  localStorage.removeItem(getProfilePhotoKey());
+  updateProfilePhoto();
+  showToast("Foto de perfil removida.");
+}
+
 function updateHome(user) {
   document.getElementById("home-nome").innerText = user.nome;
   document.getElementById("saldo-h").innerText = formatCurrency(user.saldo);
@@ -313,6 +396,7 @@ function updateProfile(user) {
   document.getElementById("p-tel").innerText = formatPhone(user.telefone);
   document.getElementById("p-cep").innerText = formatCep(user.cep);
   document.getElementById("p-cid").innerText = `${user.cidade || "Cidade"} — ${user.estado || "UF"}`;
+  updateProfilePhoto(user);
 }
 
 function renderHomeMissions(missions) {
