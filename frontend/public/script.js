@@ -1,7 +1,5 @@
-const API = window.location.port === "5000"
-  ? window.location.origin
-  : `${window.location.protocol}//${window.location.hostname}:5000`;
-const STORAGE_TOKEN_KEY = "ecodrop_token";
+const API = `${window.location.protocol}//${window.location.hostname}:8000`;
+const STORAGE_TOKEN_KEY = "access_token";
 const STORAGE_USER_KEY = "ecodrop_user";
 const STORAGE_PROFILE_PHOTO_PREFIX = "ecodrop_profile_photo_";
 const MAX_PROFILE_PHOTO_SIZE = 2 * 1024 * 1024;
@@ -379,10 +377,7 @@ function removerFotoPerfil() {
 
 function updateHome(user) {
   document.getElementById("home-nome").innerText = user.nome;
-  document.getElementById("saldo-h").innerText = formatCurrency(user.saldo);
   document.getElementById("home-summary").innerText = `Saldo pronto para uso · Nível ${user.nivel} 🌿`;
-  document.getElementById("stat-entregas").innerText = user.metrics?.deliveries ?? 0;
-  document.getElementById("stat-reciclado").innerText = `${Number(user.metrics?.recycledAmount || 0).toLocaleString("pt-BR")} kg`;
   document.getElementById("stat-nivel").innerText = user.nivel;
 }
 
@@ -413,23 +408,24 @@ function renderHomeMissions(missions) {
 
   container.innerHTML = missions
     .map((mission) => {
-      const missionMeta = MISSION_DETAILS[mission.slug] || {};
-      const progressPercent = mission.targetQuantity
-        ? Math.max(0, Math.min(100, Math.round((Number(mission.progress || 0) / Number(mission.targetQuantity || 1)) * 100)))
-        : 0;
-      const progressText = mission.status === "completed"
+      const titulo = mission.titulo ?? mission.title ?? "Missão";
+      const percentual = mission.percentual != null
+        ? Math.round(mission.percentual * 100)
+        : (mission.targetQuantity ? Math.round((mission.progress / mission.targetQuantity) * 100) : 0);
+      const concluida = mission.concluida ?? mission.status === "completed";
+      const progressText = concluida
         ? "Meta concluída com sucesso"
-        : `${Number(mission.progress || 0).toLocaleString("pt-BR")} / ${Number(mission.targetQuantity || 0).toLocaleString("pt-BR")} concluídos`;
+        : `${mission.progresso_atual ?? mission.progress ?? 0} / ${mission.meta_quantidade ?? mission.targetQuantity ?? 0} concluídos`;
 
       return `
-        <div class="mc" onclick="openMissao('${mission.slug}')">
-          <div class="mi" style="background:${missionMeta.background || "#e8f5ee"}">${missionMeta.icon || "🎯"}</div>
+        <div class="mc">
+          <div class="mi" style="background:#e8f5ee">🎯</div>
           <div class="minfo">
-            <h3>${escapeHtml(mission.title)}</h3>
-            <div class="pb"><div class="pf" style="width:${progressPercent}%"></div></div>
+            <h3>${escapeHtml(titulo)}</h3>
+            <div class="pb"><div class="pf" style="width:${percentual}%"></div></div>
             <p>${escapeHtml(progressText)}</p>
           </div>
-          <div class="mpts">${escapeHtml(getMissionRewardLabel(mission))}</div>
+          <div class="mpts">+${mission.recompensa_xp ?? mission.xpReward ?? 0} XP</div>
         </div>
       `;
     })
@@ -449,18 +445,21 @@ function renderTransactions(transactions) {
 
   const items = transactions
     .map((transaction) => {
-      const isPositive = transaction.value >= 0;
+      const isPositive = (transaction.tipo ?? transaction.type) === "entrada" || (transaction.value ?? 0) >= 0;
       const signalClass = isPositive ? "plus" : "minus";
-      const icon = transaction.origin === "delivery" ? "♻️" : transaction.origin === "bonus" ? "🏆" : "🏪";
+      const icon = isPositive ? "♻️" : "🏪";
+      const valor = transaction.valor ?? Math.abs(transaction.value ?? 0);
+      const descricao = transaction.descricao ?? transaction.description ?? "";
+      const data = transaction.created_at ?? transaction.createdAt;
 
       return `
         <div class="hi">
           <div class="hico" style="background:${isPositive ? "#e8f5ee" : "#fff3e0"}">${icon}</div>
           <div class="hinfo">
-            <h4>${transaction.description}</h4>
-            <p>${formatDateTime(transaction.createdAt)} · ${transaction.type === "credit" || transaction.type === "bonus" ? "Crédito confirmado" : "Débito realizado"}</p>
+            <h4>${descricao}</h4>
+            <p>${formatDateTime(data)} · ${isPositive ? "Crédito confirmado" : "Débito realizado"}</p>
           </div>
-          <div class="hval ${signalClass}">${isPositive ? "+" : "-"}R$${formatCurrency(Math.abs(transaction.value))}</div>
+          <div class="hval ${signalClass}">${isPositive ? "+" : "-"}R$${formatCurrency(Math.abs(valor))}</div>
         </div>
       `;
     })
@@ -470,17 +469,17 @@ function renderTransactions(transactions) {
 }
 
 function updateWallet(wallet) {
-  document.getElementById("saldo-c").innerText = formatCurrency(wallet.balance);
-  document.getElementById("wallet-summary").innerText = `Cartão virtual ativo · Nível ${wallet.level} 🌿`;
-  document.getElementById("wallet-level-title").innerText = `🌿 Nível ${wallet.level} — ${wallet.levelTitle}`;
-  document.getElementById("wallet-level-progress").innerText = `${wallet.progressPercent}%`;
-  document.getElementById("wallet-level-bar").style.width = `${wallet.progressPercent}%`;
+  const saldo = wallet.saldo_atual ?? wallet.balance ?? 0;
+  const nivel = wallet.nivel ?? wallet.level ?? 1;
+  const progresso = Math.round((wallet.progresso_proximo_nivel ?? wallet.progressPercent ?? 0) * 100);
 
-  document.getElementById("wallet-level-description").innerText = wallet.nextLevelXp
-    ? `${wallet.xpToNextLevel} XP para chegar ao próximo nível e desbloquear novos benefícios.`
-    : "Você já está no nível máximo atual do MVP.";
-
-  document.getElementById("saldo-h").innerText = formatCurrency(wallet.balance);
+  document.getElementById("saldo-c").innerText = formatCurrency(saldo);
+  document.getElementById("saldo-h").innerText = formatCurrency(saldo);
+  document.getElementById("wallet-summary").innerText = `Cartão virtual ativo · Nível ${nivel} 🌿`;
+  document.getElementById("wallet-level-title").innerText = `🌿 Nível ${nivel}`;
+  document.getElementById("wallet-level-progress").innerText = `${progresso}%`;
+  document.getElementById("wallet-level-bar").style.width = `${progresso}%`;
+  document.getElementById("wallet-level-description").innerText = `${progresso}% para o próximo nível.`;
 }
 
 function hydrateUser(user) {
@@ -497,7 +496,7 @@ async function loadMissionData() {
   }
 
   try {
-    const missions = await apiGet("/missions/me");
+    const missions = await api.getMissoesAtivas();
     missionsCache = missions;
     renderHomeMissions(missions);
   } catch (error) {
@@ -511,8 +510,8 @@ async function loadMissionData() {
 
 async function loadWalletData() {
   const [wallet, transactions] = await Promise.all([
-    apiGet("/wallet/me"),
-    apiGet("/wallet/me/transactions"),
+    api.getSaldo(),
+    api.getHistorico(),
   ]);
 
   updateWallet(wallet);
@@ -541,45 +540,42 @@ function renderCollectionPoints(points) {
   collectionPointsCache = points.reduce(
     (accumulator, point) => ({
       ...accumulator,
-      [point.slug]: {
-        slug: point.slug,
-        name: point.name,
-        address: `${point.address} — ${point.city}`,
-        materials: point.materials,
-        materialOptions: point.materialOptions || [],
-        distance: formatDistance(point.distanceKm),
-        status: "Aberto",
-        description: point.description,
+      [point.id]: {
+        id: point.id,
+        nome: point.nome ?? point.name,
+        endereco: point.endereco ?? point.address,
+        materiais_aceitos: point.materiais_aceitos ?? point.materials ?? [],
       },
     }),
-    { ...DEFAULT_POINTS },
+    {},
   );
 
   pointsContainer.innerHTML = points
     .map((point) => {
-      const icon = point.materials.includes("Eletrônico")
+      const materiais = point.materiais_aceitos ?? point.materials ?? [];
+      const icon = materiais.includes("eletrônico") || materiais.includes("Eletrônico")
         ? "🔋"
-        : point.materials.includes("Vidro")
+        : materiais.includes("vidro") || materiais.includes("Vidro")
           ? "🔵"
-          : point.materials.includes("Metal")
+          : materiais.includes("metal") || materiais.includes("Metal")
             ? "🥫"
             : "♻️";
-
       const background = icon === "🔋" ? "#fdf0e6" : icon === "🔵" || icon === "🥫" ? "#e3f4fb" : "#e8f5ee";
-      const tags = point.materials.map((material) => `<span class="ptag">${material}</span>`).join("");
+      const tags = materiais.map((m) => `<span class="ptag">${m}</span>`).join("");
+      const nome = point.nome ?? point.name;
+      const endereco = point.endereco ?? point.address ?? "";
 
       return `
-        <div class="pc" onclick="openPonto('${point.slug}')">
+        <div class="pc" onclick="openAgenda(${point.id})">
           <div class="pico" style="background:${background}">${icon}</div>
           <div class="pinfo">
-            <h3>${point.name}</h3>
-            <p>${point.address} — ${point.city}</p>
+            <h3>${escapeHtml(nome)}</h3>
+            <p>${escapeHtml(endereco)}</p>
             <div class="ptags">${tags}</div>
           </div>
           <div class="pdist">
-            <div class="km">${formatDistance(point.distanceKm)}</div>
             <div class="dt">Aberto</div>
-            <button class="ag-btn" onclick="event.stopPropagation();openAgenda('${point.slug}')">Agendar</button>
+            <button class="ag-btn" onclick="event.stopPropagation();openAgenda(${point.id})">Agendar</button>
           </div>
         </div>
       `;
@@ -600,7 +596,7 @@ async function loadCollectionPoints(materialSlug = "") {
       query.set("material", materialSlug);
     }
 
-    const points = await apiGet(`/collection-points?${query.toString()}`);
+    const points = await api.getPontos(materialSlug || null);
     renderCollectionPoints(points);
   } catch (error) {
     document.getElementById("points-list").innerHTML =
@@ -617,11 +613,9 @@ function renderPartners(partners) {
   }
 
   const groupedPartners = partners.reduce((accumulator, partner) => {
-    if (!accumulator[partner.category]) {
-      accumulator[partner.category] = [];
-    }
-
-    accumulator[partner.category].push(partner);
+    const cat = partner.categoria ?? partner.category ?? "Outros";
+    if (!accumulator[cat]) accumulator[cat] = [];
+    accumulator[cat].push(partner);
     return accumulator;
   }, {});
 
@@ -629,18 +623,15 @@ function renderPartners(partners) {
     .map(([category, items]) => {
       const cards = items
         .map((partner) => {
-          const firstBenefit = partner.benefits[0];
-          const benefitText = firstBenefit
-            ? `${firstBenefit.title} · R$${formatCurrency(firstBenefit.voucherCost)}`
-            : "Benefício em configuração";
+          const nome = partner.nome ?? partner.name;
+          const descricao = partner.descricao ?? partner.description ?? "";
 
           return `
             <div class="parc-c" onclick="openPartnerBenefits(${partner.id})">
-              <div class="parc-logo" style="background:#e8f5ee">${partner.logo}</div>
+              <div class="parc-logo" style="background:#e8f5ee">🏪</div>
               <div class="parc-inf">
-                <h3>${partner.name}</h3>
-                <p>${partner.description}</p>
-                <div class="parc-desc">${benefitText}</div>
+                <h3>${escapeHtml(nome)}</h3>
+                <p>${escapeHtml(descricao)}</p>
               </div>
               <div class="parr">›</div>
             </div>
@@ -648,14 +639,14 @@ function renderPartners(partners) {
         })
         .join("");
 
-      return `<div class="pcat">${category}</div>${cards}`;
+      return `<div class="pcat">${escapeHtml(category)}</div>${cards}`;
     })
     .join("");
 }
 
 async function loadPartners() {
   try {
-    const partners = await apiGet("/partners");
+    const partners = await api.getParceiros();
     partnersCache = partners;
     renderPartners(partners);
   } catch (error) {
@@ -680,12 +671,12 @@ async function carregarSessao() {
   }
 
   try {
-    const user = await apiGet("/auth/me");
+    const user = await api.getMe();
     hydrateUser(user);
     await Promise.all([loadWalletData(), loadCollectionPoints(), loadPartners(), loadMissionData()]);
     return true;
   } catch (error) {
-    clearSession();
+    api.logout();
     usuarioLogado = null;
     updateRoleActions(null);
     return false;
@@ -1514,12 +1505,10 @@ async function confirmarAgenda() {
   confirmButton.disabled = true;
 
   try {
-    await apiPost("/appointments", {
-      pointSlug: agendaAtual.slug,
-      scheduledDate: slotSelecionado.date,
-      startTime: slotSelecionado.startTime,
-      endTime: slotSelecionado.endTime,
-      notes: null,
+    await api.criarAgendamento({
+      ponto_id: agendaAtual.id ?? agendaAtual.slug,
+      data_agendada: slotSelecionado.date || new Date().toISOString(),
+      observacao: null,
     });
 
     closeModal("mod-agenda");
@@ -1532,46 +1521,41 @@ async function confirmarAgenda() {
 }
 
 async function fazerCadastro() {
+  const nome = `${document.getElementById("c-nome").value} ${document.getElementById("c-sob").value}`.trim();
   const payload = {
-    nome: document.getElementById("c-nome").value,
-    sobrenome: document.getElementById("c-sob").value,
+    nome,
     cpf: document.getElementById("c-cpf").value,
-    telefone: document.getElementById("c-tel").value,
-    cep: document.getElementById("c-cep").value,
-    cidade: document.getElementById("c-cid").value,
-    estado: document.getElementById("c-est").value,
     email: document.getElementById("c-email").value,
     senha: document.getElementById("c-senha").value,
   };
 
   try {
-    await apiPost("/auth/register", payload);
+    await api.register(payload);
     showToast("✅ Conta criada com sucesso! Faça seu login.");
     goTo("login");
   } catch (error) {
-    showToast(resolveErrorMessage(error, "Erro ao cadastrar sua conta."));
+    showToast(error?.detail || "Erro ao cadastrar sua conta.");
   }
 }
 
 async function fazerLogin() {
-  const payload = {
-    email: document.getElementById("l-email").value,
-    senha: document.getElementById("l-senha").value,
-  };
+  const email = document.getElementById("l-email").value;
+  const senha = document.getElementById("l-senha").value;
 
   try {
-    const result = await apiPost("/auth/login", payload);
-    saveSession(result.token, result.usuario);
+    await api.login(email, senha);
+    const user = await api.getMe();
+    hydrateUser(user);
     await carregarSessao();
     showToast("✅ Login realizado!");
     goTo("home");
   } catch (error) {
-    showToast(resolveErrorMessage(error, "Email ou senha inválidos."));
+    showToast(error?.detail || "Email ou senha inválidos.");
   }
 }
 
 function fazerLogout() {
-  clearSession();
+  api.logout();
   usuarioLogado = null;
   updateRoleActions(null);
   showToast("👋 Logout realizado");

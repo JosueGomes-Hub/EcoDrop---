@@ -1,235 +1,151 @@
-# EcoDrop
+# EcoDrop v2
 
-Aplicação web de reciclagem com carteira de VoucherVerde, agendamento de entregas, registro de materiais, missões, parceiros e suporte.
+Aplicação web de reciclagem com carteira de VoucherVerde, agendamento de entregas, missões e parceiros.
 
-O projeto está dividido em:
+**Stack v2:** Python 3.12 + FastAPI + SQLAlchemy + Alembic (backend) · Node.js + Express (frontend)
 
-- `backend/`: API Node.js + Express + MySQL.
-- `frontend/`: interface estática servida pelo próprio backend.
+---
 
-## Requisitos
+## Pré-requisitos
 
-- Node.js 18+.
-- MySQL 8+.
-- npm.
+- Python 3.12+
+- Node.js 18+
+- MySQL 8+
 
-## Como rodar
+---
 
-### 1. Criar o banco de dados
+## Instalação
 
-Crie um banco MySQL chamado `ecodrop` e execute o script abaixo:
+### 1. Variáveis de ambiente
+
+```bash
+cp .env.example .env
+# Edite .env com suas credenciais MySQL e uma SECRET_KEY segura
+```
+
+### 2. Banco de dados
 
 ```sql
-SOURCE backend/database/setup.sql;
+CREATE DATABASE ecodrop_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-Se preferir via terminal MySQL:
-
-```bash
-mysql -u root -p ecodrop < backend/database/setup.sql
-```
-
-O script cria a estrutura principal e já insere dados base de materiais, pontos de coleta, parceiros e missões.
-
-### 2. Configurar variáveis de ambiente
-
-Crie o arquivo `backend/.env` com algo neste formato:
-
-```env
-PORT=5000
-HOST=0.0.0.0
-
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=sua_senha
-DB_NAME=ecodrop
-
-JWT_SECRET=troque_esta_chave_por_uma_secreta
-JWT_EXPIRES_IN=7d
-
-CORS_ORIGIN=http://127.0.0.1:5500,http://localhost:5500
-```
-
-Notas:
-
-- `JWT_SECRET` é obrigatório para login e rotas autenticadas.
-- `HOST=0.0.0.0` permite acessar a aplicação pelo IP da máquina na rede local.
-- Se você usar apenas o frontend servido pelo backend em `:5000`, o `CORS_ORIGIN` é menos relevante.
-
-### 3. Instalar dependências
+### 3. Backend (Python/FastAPI)
 
 ```bash
 cd backend
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+alembic upgrade head             # cria as tabelas
+python -m app.seed.seed_data     # insere dados iniciais
+uvicorn app.main:app --reload --port 8000
+```
+
+### 4. Frontend (Node.js)
+
+```bash
+cd frontend
 npm install
-```
-
-### 4. Iniciar a aplicação
-
-Modo desenvolvimento:
-
-```bash
-cd backend
 npm run dev
 ```
 
-Modo normal:
+---
+
+## URLs
+
+| Serviço   | URL                          |
+|-----------|------------------------------|
+| Frontend  | http://localhost:3000        |
+| API       | http://localhost:8000        |
+| Swagger   | http://localhost:8000/docs   |
+| ReDoc     | http://localhost:8000/redoc  |
+
+---
+
+## Docker Compose (alternativa)
 
 ```bash
-cd backend
-npm start
+cp .env.example .env   # configure DB_PASSWORD e SECRET_KEY
+docker-compose up
 ```
 
-## Como acessar
-
-Após subir o servidor, acesse:
-
-- Local: `http://localhost:5000`
-- Na rede local: `http://SEU_IP:5000`
-
-Exemplo para celular na mesma rede Wi‑Fi:
-
-- `http://192.168.1.10:5000`
-
-O frontend já é servido pelo backend na rota raiz `/`, então não é necessário subir outro servidor para a pasta `frontend`.
-
-## Fluxos principais
-
-### Usuário comum
-
-1. Criar conta.
-2. Fazer login.
-3. Ver pontos de coleta no mapa.
-4. Agendar uma entrega.
-5. Registrar uma entrega com materiais aceitos no ponto.
-6. Acompanhar o histórico das entregas em Auto Atendimento.
-7. Usar o saldo na carteira para resgatar benefícios dos parceiros.
-8. Abrir tickets em suporte e responder no próprio app.
-
-### Operador do ponto
-
-Além do fluxo comum, operador pode:
-
-1. Abrir `Auto Atendimento`.
-2. Entrar em `Operação do ponto`.
-3. Revisar entregas pendentes.
-4. Confirmar ou rejeitar uma entrega.
-
-Quando uma entrega é confirmada, o crédito é aplicado na carteira do usuário e o progresso de missões é atualizado.
-
-## Como testar operador
-
-O cadastro público cria usuários com perfil `user`. Para testar o fluxo de operador, promova um usuário no banco e vincule-o a um ponto de coleta.
-
-Exemplo:
-
-```sql
-UPDATE usuarios
-SET role = 'operator'
-WHERE email = 'operador@teste.com';
-
-INSERT INTO operadores_ponto (usuario_id, ponto_id, status)
-SELECT u.id, p.id, 'active'
-FROM usuarios u
-JOIN pontos_coleta p ON p.slug = 'ecoponto-central'
-WHERE u.email = 'operador@teste.com'
-ON DUPLICATE KEY UPDATE status = 'active';
-```
-
-Para perfil `admin`, basta ajustar `role = 'admin'`.
+---
 
 ## Rotas principais da API
 
 ### Autenticação
-
 - `POST /auth/register`
 - `POST /auth/login`
-- `GET /auth/me`
+- `POST /auth/refresh`
+- `POST /auth/logout`
 
-### Perfil
-
+### Usuário
 - `GET /users/me`
 - `PUT /users/me`
-- `PATCH /users/me/password`
+- `GET /users/me/stats`
 
-### Carteira e resgates
+### Carteira VoucherVerde
+- `GET /vouchers/saldo`
+- `GET /vouchers/historico`
+- `POST /vouchers/usar`
 
-- `GET /wallet/me`
-- `GET /wallet/me/transactions`
-- `GET /wallet/me/redemptions`
-- `POST /wallet/redeem`
+### Coleta e Agendamentos
+- `GET /coleta/pontos`
+- `GET /coleta/pontos/{id}`
+- `POST /coleta/agendamentos`
+- `GET /coleta/agendamentos`
+- `PUT /coleta/agendamentos/{id}`
 
-### Entregas e agendamentos
+### Missões e Parceiros
+- `GET /missoes`
+- `GET /missoes/ativas`
+- `GET /parceiros`
+- `GET /parceiros/{id}`
 
-- `POST /appointments`
-- `GET /appointments/me`
-- `GET /deliveries/me`
-- `POST /deliveries`
-- `GET /deliveries/operator/pending`
-- `PATCH /deliveries/:deliveryId/review`
-
-### Parceiros, missões e suporte
-
-- `GET /partners`
-- `GET /missions/me`
-- `GET /support/tickets`
-- `GET /support/tickets/:ticketId`
-- `POST /support/tickets`
-- `POST /support/tickets/:ticketId/messages`
-
-## Estrutura resumida
-
-```text
-backend/
-  app.js
-  server.js
-  config/
-  controllers/
-  database/
-  middleware/
-  routes/
-  services/
-  validators/
-
-frontend/
-  index.html
-  script.js
-  css/
-  assets/
-```
-
-## Observações
-
-- O projeto ainda não possui suíte automatizada de testes.
-- A interface foi pensada para rodar no navegador desktop e também no celular usando o IP da máquina.
-- Se o login falhar com erro relacionado a JWT, revise o valor de `JWT_SECRET` no arquivo `backend/.env`.
+---
 
 ## Comandos úteis
 
-Instalar dependências:
-
 ```bash
-cd backend
-npm install
+# Gerar nova migration após alterar modelos
+alembic revision --autogenerate -m "descricao"
+alembic upgrade head
+
+# Rodar seed novamente (idempotente)
+python -m app.seed.seed_data
+
+# Rodar testes (quando banco disponível)
+pytest backend/tests/
 ```
 
-Rodar em desenvolvimento:
+---
 
-```bash
-cd backend
-npm run dev
+## Estrutura
+
 ```
+backend/
+  app/
+    core/          # security, dependencies, exceptions
+    models/        # SQLAlchemy models
+    schemas/       # Pydantic schemas
+    routers/       # FastAPI routers
+    services/      # lógica de negócio
+    repositories/  # acesso ao banco
+    seed/          # dados iniciais
+  migrations/      # Alembic
+  requirements.txt
+  Dockerfile
 
-Rodar em produção/local:
+frontend/
+  public/
+    index.html
+    script.js
+    api.js         # cliente HTTP centralizado
+    css/
+    assets/
+  server.js
+  package.json
 
-```bash
-cd backend
-npm start
-```
-
-Validar sintaxe do frontend:
-
-```bash
-cd backend
-node --check ..\frontend\script.js
+docker-compose.yml
+.env.example
 ```
