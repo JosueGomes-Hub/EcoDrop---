@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     ALLOWED_ORIGINS: str = "http://localhost:3000"
+    CORS_ALLOW_ALL: bool = False
 
     model_config = {"env_file": str(ROOT_DIR / ".env"), "extra": "ignore"}
 
