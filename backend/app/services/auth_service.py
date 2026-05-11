@@ -1,6 +1,7 @@
 import hashlib
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -25,7 +26,11 @@ def register(db: Session, data: UserCreate) -> UserResponse:
 
     user = User(nome=data.nome, email=data.email, cpf=data.cpf, senha_hash=hash_password(data.senha))
     db.add(user)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status.HTTP_409_CONFLICT, "Email ou CPF já cadastrado")
     db.add(VoucherVerde(user_id=user.id))
     db.commit()
     db.refresh(user)
