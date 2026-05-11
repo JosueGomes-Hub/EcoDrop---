@@ -5,4 +5,4 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.listen(PORT, () => console.log(`Frontend: http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Frontend: http://localhost:${PORT}`));
