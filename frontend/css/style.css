@@ -1082,6 +1082,42 @@ body {
   font-size: 34px;
   border: 4px solid rgba(255, 255, 255, 0.28);
   box-shadow: 0 0 0 7px rgba(39, 201, 122, 0.18);
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+.perf-av img {
+  width: 100%;
+  height: 100%;
+  display: none;
+  object-fit: cover;
+}
+.perf-av.has-photo img {
+  display: block;
+}
+.perf-av.has-photo span {
+  display: none;
+}
+.profile-photo-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.profile-photo-actions button {
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.profile-photo-actions button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
 }
 .perf-nome {
   color: #fff;

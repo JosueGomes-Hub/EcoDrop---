@@ -70,6 +70,7 @@ app.use(
 app.use(express.json());
 
 app.use("/frontend", express.static(frontendPath));
+app.use(express.static(frontendPath));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
@@ -79,7 +80,7 @@ app.get("/health", (req, res) => {
   res.json({
     success: true,
     data: {
-      name: "AmazonViva API",
+      name: "EcoDrop API",
       status: "ok",
       version: "2.0.0",
     },
