@@ -15,8 +15,10 @@ class VoucherSaldo(BaseModel):
 class TransacaoResponse(BaseModel):
     id: int
     tipo: str
+    origem: str
     valor: Decimal
-    descricao: str | None
+    saldo_resultante: Decimal
+    descricao: str
     created_at: datetime
 
     model_config = {"from_attributes": True}

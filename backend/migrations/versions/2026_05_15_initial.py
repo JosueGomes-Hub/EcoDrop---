@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: 7df7b3e956a8
+Revision ID: 2d250a5cdd67
 Revises: 
-Create Date: 2026-05-14 15:00:34.462523
+Create Date: 2026-05-15 18:03:49.726566
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7df7b3e956a8'
+revision: str = '2d250a5cdd67'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -39,8 +39,7 @@ def upgrade() -> None:
     sa.Column('pontos_por_unidade', sa.Integer(), nullable=False),
     sa.Column('valor_por_unidade', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('status', sa.Enum('active', 'inactive', name='enum_material_status'), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('slug', name='uq_materiais_slug')
     )
@@ -52,8 +51,7 @@ def upgrade() -> None:
     sa.Column('cidade', sa.String(length=100), nullable=False),
     sa.Column('logo_emoji', sa.String(length=10), nullable=False),
     sa.Column('status', sa.Enum('active', 'inactive', name='enum_parceiro_status'), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('nome', name='uq_parceiros_nome')
     )
@@ -72,8 +70,7 @@ def upgrade() -> None:
     sa.Column('abre_as', sa.Time(), nullable=True),
     sa.Column('fecha_as', sa.Time(), nullable=True),
     sa.Column('status', sa.Enum('active', 'inactive', name='enum_ponto_status'), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('slug', name='uq_pontos_coleta_slug')
     )
@@ -93,8 +90,8 @@ def upgrade() -> None:
     sa.Column('saldo', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('nivel', sa.Integer(), nullable=False),
     sa.Column('xp_total', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
+    sa.Column('atualizado_em', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('cpf', name='uq_usuarios_cpf'),
     sa.UniqueConstraint('email', name='uq_usuarios_email')
@@ -108,8 +105,8 @@ def upgrade() -> None:
     sa.Column('janela_fim', sa.Time(), nullable=False),
     sa.Column('status', sa.Enum('scheduled', 'confirmed', 'checked_in', 'completed', 'cancelled', 'missed', name='enum_agendamento_status'), nullable=False),
     sa.Column('observacoes', sa.String(length=255), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
+    sa.Column('atualizado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['ponto_id'], ['pontos_coleta.id'], ),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -124,8 +121,7 @@ def upgrade() -> None:
     sa.Column('valor_desconto', sa.DECIMAL(precision=10, scale=2), nullable=True),
     sa.Column('limite_periodo', sa.Integer(), nullable=True),
     sa.Column('status', sa.Enum('active', 'inactive', name='enum_beneficio_status'), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['parceiro_id'], ['parceiros.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('parceiro_id', 'titulo', name='uq_beneficio_parceiro_titulo')
@@ -152,8 +148,7 @@ def upgrade() -> None:
     sa.Column('usuario_id', sa.Integer(), nullable=False),
     sa.Column('ponto_id', sa.Integer(), nullable=False),
     sa.Column('status', sa.Enum('active', 'inactive', name='enum_operador_status'), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['ponto_id'], ['pontos_coleta.id'], ),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -185,8 +180,8 @@ def upgrade() -> None:
     sa.Column('descricao', sa.Text(), nullable=False),
     sa.Column('status', sa.Enum('open', 'in_progress', 'resolved', 'closed', name='enum_ticket_status'), nullable=False),
     sa.Column('prioridade', sa.Enum('low', 'medium', 'high', name='enum_ticket_prioridade'), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
+    sa.Column('atualizado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -199,8 +194,7 @@ def upgrade() -> None:
     sa.Column('valor', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('saldo_resultante', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('descricao', sa.String(length=255), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -215,8 +209,7 @@ def upgrade() -> None:
     sa.Column('observacoes_operador', sa.String(length=255), nullable=True),
     sa.Column('confirmado_por', sa.Integer(), nullable=True),
     sa.Column('confirmado_em', sa.DateTime(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['agendamento_id'], ['agendamentos.id'], ),
     sa.ForeignKeyConstraint(['confirmado_por'], ['usuarios.id'], ),
     sa.ForeignKeyConstraint(['ponto_id'], ['pontos_coleta.id'], ),
@@ -229,8 +222,7 @@ def upgrade() -> None:
     sa.Column('ticket_id', sa.Integer(), nullable=False),
     sa.Column('autor_id', sa.Integer(), nullable=False),
     sa.Column('mensagem', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['autor_id'], ['usuarios.id'], ),
     sa.ForeignKeyConstraint(['ticket_id'], ['tickets_suporte.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -258,8 +250,7 @@ def upgrade() -> None:
     sa.Column('status', sa.Enum('generated', 'used', 'expired', 'cancelled', name='enum_resgate_status'), nullable=False),
     sa.Column('expira_em', sa.DateTime(), nullable=True),
     sa.Column('utilizado_em', sa.DateTime(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['beneficio_id'], ['beneficios_parceiro.id'], ),
     sa.ForeignKeyConstraint(['parceiro_id'], ['parceiros.id'], ),
     sa.ForeignKeyConstraint(['usuario_id'], ['usuarios.id'], ),
@@ -274,8 +265,7 @@ def upgrade() -> None:
     sa.Column('unidade', sa.Enum('kg', 'un', name='enum_entrega_item_unidade'), nullable=False),
     sa.Column('pontos_gerados', sa.Integer(), nullable=False),
     sa.Column('valor_creditado', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('criado_em', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['entrega_id'], ['entregas.id'], ),
     sa.ForeignKeyConstraint(['material_id'], ['materiais.id'], ),
     sa.PrimaryKeyConstraint('id')

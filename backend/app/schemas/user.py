@@ -4,8 +4,13 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 class UserCreate(BaseModel):
     nome: str
-    email: EmailStr
+    sobrenome: str
     cpf: str
+    telefone: str
+    cep: str
+    cidade: str
+    estado: str
+    email: EmailStr
     senha: str
 
     @field_validator("cpf")
@@ -19,15 +24,26 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     nome: str | None = None
+    sobrenome: str | None = None
     email: EmailStr | None = None
+    telefone: str | None = None
+    cep: str | None = None
+    cidade: str | None = None
+    estado: str | None = None
 
 
 class UserResponse(BaseModel):
     id: int
     nome: str
+    sobrenome: str
     email: str
     cpf: str
+    telefone: str
+    cep: str
+    cidade: str
+    estado: str
     role: str
+    saldo: float
     xp_total: int
     nivel: int
 

@@ -1521,10 +1521,14 @@ async function confirmarAgenda() {
 }
 
 async function fazerCadastro() {
-  const nome = `${document.getElementById("c-nome").value} ${document.getElementById("c-sob").value}`.trim();
   const payload = {
-    nome,
+    nome: document.getElementById("c-nome").value.trim(),
+    sobrenome: document.getElementById("c-sob").value.trim(),
     cpf: document.getElementById("c-cpf").value,
+    telefone: document.getElementById("c-tel").value,
+    cep: document.getElementById("c-cep").value,
+    cidade: document.getElementById("c-cid").value.trim(),
+    estado: document.getElementById("c-est").value,
     email: document.getElementById("c-email").value,
     senha: document.getElementById("c-senha").value,
   };

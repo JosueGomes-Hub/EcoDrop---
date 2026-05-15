@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from app.models.user import User
-from app.models.voucher import VoucherVerde
 from app.models.refresh_token import RefreshToken
 from app.repositories.user_repo import user_repo
 from app.schemas.auth import LoginRequest, TokenResponse
@@ -24,22 +23,30 @@ def register(db: Session, data: UserCreate) -> UserResponse:
     if user_repo.get_by_cpf(db, data.cpf):
         raise HTTPException(status.HTTP_409_CONFLICT, "CPF já cadastrado")
 
-    user = User(nome=data.nome, email=data.email, cpf=data.cpf, senha_hash=hash_password(data.senha))
+    user = User(
+        nome=data.nome,
+        sobrenome=data.sobrenome,
+        cpf=data.cpf,
+        telefone=data.telefone,
+        cep=data.cep,
+        cidade=data.cidade,
+        estado=data.estado,
+        email=data.email,
+        senha=hash_password(data.senha),
+    )
     db.add(user)
     try:
-        db.flush()
+        db.commit()
     except IntegrityError:
         db.rollback()
         raise HTTPException(status.HTTP_409_CONFLICT, "Email ou CPF já cadastrado")
-    db.add(VoucherVerde(user_id=user.id))
-    db.commit()
     db.refresh(user)
     return UserResponse.model_validate(user)
 
 
 def login(db: Session, data: LoginRequest) -> TokenResponse:
     user = user_repo.get_by_email(db, data.email)
-    if not user or not verify_password(data.senha, user.senha_hash):
+    if not user or not verify_password(data.senha, user.senha):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Credenciais inválidas")
 
     access = create_access_token({"sub": str(user.id)})

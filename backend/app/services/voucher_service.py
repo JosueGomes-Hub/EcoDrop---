@@ -16,20 +16,22 @@ def _nivel_e_progresso(xp: int) -> tuple[int, float]:
 
 
 def get_saldo(db: Session, user_id: int) -> VoucherSaldo:
-    v = voucher_repo.get_by_user(db, user_id)
-    if not v:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Carteira não encontrada")
-    nivel, progresso = _nivel_e_progresso(v.user.xp_total)
-    return VoucherSaldo(saldo_atual=v.saldo_atual, xp_total=v.user.xp_total, nivel=nivel, progresso_proximo_nivel=progresso)
+    user = voucher_repo.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+    nivel, progresso = _nivel_e_progresso(user.xp_total)
+    return VoucherSaldo(
+        saldo_atual=user.saldo,
+        xp_total=user.xp_total,
+        nivel=nivel,
+        progresso_proximo_nivel=progresso,
+    )
 
 
 def get_historico(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> list[TransacaoResponse]:
-    v = voucher_repo.get_by_user(db, user_id)
-    if not v:
-        return []
     rows = (
         db.query(Transacao)
-        .filter(Transacao.voucher_id == v.id)
+        .filter(Transacao.usuario_id == user_id)
         .order_by(Transacao.created_at.desc())
         .offset(skip).limit(limit).all()
     )
@@ -37,20 +39,29 @@ def get_historico(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> 
 
 
 def usar(db: Session, user_id: int, parceiro_id: int, valor: Decimal) -> None:
-    v = db.query(__import__("app.models.voucher", fromlist=["VoucherVerde"]).VoucherVerde).filter_by(user_id=user_id).with_for_update().first()
-    if not v:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Carteira não encontrada")
-    if v.saldo_atual < valor:
+    user = db.query(__import__("app.models.user", fromlist=["User"]).User).filter_by(id=user_id).with_for_update().first()
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+    if Decimal(str(user.saldo)) < valor:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Saldo insuficiente")
-    v.saldo_atual -= valor
-    voucher_repo.add_transacao(db, v.id, "saida", valor, f"Resgate parceiro #{parceiro_id}")
+    user.saldo = Decimal(str(user.saldo)) - valor
+    voucher_repo.add_transacao(
+        db, user_id, tipo="debit", origem="resgate",
+        valor=valor, saldo_resultante=user.saldo,
+        descricao=f"Resgate parceiro #{parceiro_id}",
+        referencia_id=parceiro_id,
+    )
     db.commit()
 
 
-def creditar(db: Session, user_id: int, valor: Decimal, descricao: str) -> None:
-    v = voucher_repo.get_by_user(db, user_id)
-    if not v:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Carteira não encontrada")
-    v.saldo_atual += valor
-    voucher_repo.add_transacao(db, v.id, "entrada", valor, descricao)
+def creditar(db: Session, user_id: int, valor: Decimal, descricao: str, origem: str = "entrega") -> None:
+    user = voucher_repo.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
+    user.saldo = Decimal(str(user.saldo)) + valor
+    voucher_repo.add_transacao(
+        db, user_id, tipo="credit", origem=origem,
+        valor=valor, saldo_resultante=user.saldo,
+        descricao=descricao,
+    )
     db.commit()

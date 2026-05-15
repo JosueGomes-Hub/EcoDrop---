@@ -23,10 +23,10 @@ def update_me(data: UserUpdate, db: Session = Depends(get_db), current_user: Use
 @router.get("/me/stats", response_model=UserStats)
 def get_stats(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     from app.models.coleta import Agendamento
-    from app.models.missao import ProgressoMissao
-    total_ag = db.query(Agendamento).filter(Agendamento.user_id == current_user.id).count()
-    missoes_ok = db.query(ProgressoMissao).filter(
-        ProgressoMissao.user_id == current_user.id, ProgressoMissao.concluida == True  # noqa: E712
+    from app.models.missao import MissaoUsuario
+    total_ag = db.query(Agendamento).filter(Agendamento.usuario_id == current_user.id).count()
+    missoes_ok = db.query(MissaoUsuario).filter(
+        MissaoUsuario.usuario_id == current_user.id, MissaoUsuario.status == "completed"
     ).count()
     return UserStats(
         xp_total=current_user.xp_total,

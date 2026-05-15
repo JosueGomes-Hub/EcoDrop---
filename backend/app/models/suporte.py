@@ -1,6 +1,6 @@
 from sqlalchemy import Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, CreatedAtMixin
 
 
 class TicketSuporte(Base, TimestampMixin):
@@ -24,7 +24,7 @@ class TicketSuporte(Base, TimestampMixin):
     interacoes: Mapped[list["InteracaoSuporte"]] = relationship(back_populates="ticket")
 
 
-class InteracaoSuporte(Base, TimestampMixin):
+class InteracaoSuporte(Base, CreatedAtMixin):
     __tablename__ = "interacoes_suporte"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

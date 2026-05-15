@@ -10,7 +10,7 @@ router = APIRouter(prefix="/parceiros", tags=["parceiros"])
 
 @router.get("", response_model=list[ParceiroResponse])
 def listar(categoria: str | None = Query(None), db: Session = Depends(get_db)):
-    q = db.query(Parceiro).filter(Parceiro.ativo == True)  # noqa: E712
+    q = db.query(Parceiro).filter(Parceiro.status == "active")
     if categoria:
         q = q.filter(Parceiro.categoria == categoria)
     return q.all()
