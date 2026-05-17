@@ -1,4 +1,4 @@
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, CreatedAtMixin
 from app.models.user import User
 from app.models.voucher import Transacao
 from app.models.material import Material
@@ -9,7 +9,7 @@ from app.models.suporte import TicketSuporte, InteracaoSuporte
 from app.models.refresh_token import RefreshToken
 
 __all__ = [
-    "Base", "TimestampMixin",
+    "Base", "TimestampMixin", "CreatedAtMixin",
     "User",
     "Transacao",
     "Material",

@@ -24,13 +24,16 @@ app = FastAPI(
         {"name": "coleta", "description": "Pontos de coleta e agendamentos"},
         {"name": "missoes", "description": "Missões de reciclagem"},
         {"name": "parceiros", "description": "Parceiros e benefícios"},
+        {"name": "deliveries", "description": "Entregas e revisão de operador"},
+        {"name": "support", "description": "Tickets de suporte"},
+        {"name": "totem", "description": "Integração com totem de coleta"},
     ],
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"] if settings.CORS_ALLOW_ALL else [o.strip() for o in settings.ALLOWED_ORIGINS.split(",")],
-    allow_credentials=not settings.CORS_ALLOW_ALL,
+    allow_credentials=False if settings.CORS_ALLOW_ALL else True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -45,7 +48,7 @@ def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
-from app.routers import auth, users, vouchers, coletas, missoes, parceiros
+from app.routers import auth, users, vouchers, coletas, missoes, parceiros, totem, deliveries, suporte
 
 app.include_router(auth.router)
 app.include_router(users.router)
@@ -53,3 +56,6 @@ app.include_router(vouchers.router)
 app.include_router(coletas.router)
 app.include_router(missoes.router)
 app.include_router(parceiros.router)
+app.include_router(totem.router)
+app.include_router(deliveries.router)
+app.include_router(suporte.router)

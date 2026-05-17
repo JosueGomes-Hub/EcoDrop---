@@ -1,10 +1,10 @@
 from datetime import datetime
 from sqlalchemy import DECIMAL, DateTime, Enum, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, CreatedAtMixin
 
 
-class Parceiro(Base, TimestampMixin):
+class Parceiro(Base, CreatedAtMixin):
     __tablename__ = "parceiros"
     __table_args__ = (UniqueConstraint("nome", name="uq_parceiros_nome"),)
 
@@ -22,7 +22,7 @@ class Parceiro(Base, TimestampMixin):
     resgates: Mapped[list["ResgateVoucher"]] = relationship(back_populates="parceiro")
 
 
-class BeneficioParceiro(Base, TimestampMixin):
+class BeneficioParceiro(Base, CreatedAtMixin):
     __tablename__ = "beneficios_parceiro"
     __table_args__ = (UniqueConstraint("parceiro_id", "titulo", name="uq_beneficio_parceiro_titulo"),)
 
@@ -45,7 +45,7 @@ class BeneficioParceiro(Base, TimestampMixin):
     resgates: Mapped[list["ResgateVoucher"]] = relationship(back_populates="beneficio")
 
 
-class ResgateVoucher(Base, TimestampMixin):
+class ResgateVoucher(Base, CreatedAtMixin):
     __tablename__ = "resgates_voucher"
     __table_args__ = (UniqueConstraint("codigo_resgate", name="uq_resgates_codigo"),)
 

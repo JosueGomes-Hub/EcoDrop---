@@ -1,10 +1,10 @@
 from datetime import date, datetime
 from sqlalchemy import CHAR, DECIMAL, Date, DateTime, Enum, ForeignKey, PrimaryKeyConstraint, String, Time, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, TimestampMixin, CreatedAtMixin
 
 
-class PontoColeta(Base, TimestampMixin):
+class PontoColeta(Base, CreatedAtMixin):
     __tablename__ = "pontos_coleta"
     __table_args__ = (UniqueConstraint("slug", name="uq_pontos_coleta_slug"),)
 
@@ -45,7 +45,7 @@ class PontoMaterial(Base):
     material: Mapped["Material"] = relationship(back_populates="ponto_materiais")  # noqa: F821
 
 
-class OperadorPonto(Base, TimestampMixin):
+class OperadorPonto(Base, CreatedAtMixin):
     __tablename__ = "operadores_ponto"
     __table_args__ = (UniqueConstraint("usuario_id", "ponto_id", name="uq_operador_ponto"),)
 
@@ -81,7 +81,7 @@ class Agendamento(Base, TimestampMixin):
     entrega: Mapped["Entrega | None"] = relationship(back_populates="agendamento")  # noqa: F821
 
 
-class Entrega(Base, TimestampMixin):
+class Entrega(Base, CreatedAtMixin):
     __tablename__ = "entregas"
     __table_args__ = (UniqueConstraint("protocolo", name="uq_entregas_protocolo"),)
 
@@ -107,7 +107,7 @@ class Entrega(Base, TimestampMixin):
     itens: Mapped[list["EntregaItem"]] = relationship(back_populates="entrega")  # noqa: F821
 
 
-class EntregaItem(Base, TimestampMixin):
+class EntregaItem(Base, CreatedAtMixin):
     __tablename__ = "entrega_itens"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

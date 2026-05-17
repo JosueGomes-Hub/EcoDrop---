@@ -1,9 +1,9 @@
 from sqlalchemy import DECIMAL, Enum, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, TimestampMixin
+from app.models.base import Base, CreatedAtMixin
 
 
-class Material(Base, TimestampMixin):
+class Material(Base, CreatedAtMixin):
     __tablename__ = "materiais"
     __table_args__ = (UniqueConstraint("slug", name="uq_materiais_slug"),)
 
