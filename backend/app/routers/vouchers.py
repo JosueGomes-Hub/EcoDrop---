@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.dependencies import get_current_user
 from app.database import get_db
 from app.models.user import User
-from app.schemas.voucher import VoucherSaldo, TransacaoResponse, UsarVoucherRequest
+from app.schemas.voucher import VoucherSaldo, TransacaoResponse, UsarVoucherRequest, UsarVoucherResponse
 from app.services import voucher_service
 
 router = APIRouter(prefix="/vouchers", tags=["vouchers"])
@@ -20,6 +20,13 @@ def historico(skip: int = Query(0), limit: int = Query(50), db: Session = Depend
     return voucher_service.get_historico(db, current_user.id, skip, limit)
 
 
-@router.post("/usar", status_code=204)
+@router.post("/usar", response_model=UsarVoucherResponse)
 def usar(data: UsarVoucherRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    voucher_service.usar(db, current_user.id, data.parceiro_id, data.valor)
+    from app.services.voucher_service import _get_nivel_info
+    nivel_info = _get_nivel_info(current_user.xp_total)
+    valor_efetivo = voucher_service.usar(db, current_user.id, data.parceiro_id, data.valor)
+    return UsarVoucherResponse(
+        valor_pago=data.valor,
+        valor_efetivo=valor_efetivo,
+        bonus_aplicado=nivel_info["bonus"],
+    )

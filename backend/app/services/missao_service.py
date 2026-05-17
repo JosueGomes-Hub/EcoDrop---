@@ -70,7 +70,8 @@ def _verificar_conclusao(db: Session, user_id: int) -> None:
             mu.concluida_em = datetime.now(timezone.utc)
             if mu.missao.recompensa_tipo == "xp":
                 user.xp_total += int(mu.missao.recompensa_valor)
-                user.nivel = user.xp_total // 500 + 1
+                from app.services.voucher_service import calcular_nivel
+                user.nivel = calcular_nivel(user.xp_total)
             else:
                 creditar(db, user_id, mu.missao.recompensa_valor,
                          f"Missão concluída: {mu.missao.titulo}", origem="missao")

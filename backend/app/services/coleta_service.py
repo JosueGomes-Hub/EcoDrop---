@@ -12,8 +12,8 @@ def _ponto_to_response(p) -> PontoColetaResponse:
     return data
 
 
-def listar_pontos(db: Session, material: str | None = None) -> list[PontoColetaResponse]:
-    return [_ponto_to_response(p) for p in coleta_repo.get_pontos_by_material(db, material)]
+def listar_pontos(db: Session, material: str | None = None, city: str | None = None) -> list[PontoColetaResponse]:
+    return [_ponto_to_response(p) for p in coleta_repo.get_pontos_by_material(db, material, city)]
 
 
 def get_ponto(db: Session, ponto_id: int) -> PontoColetaResponse:

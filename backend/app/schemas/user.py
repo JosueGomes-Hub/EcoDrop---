@@ -55,3 +55,9 @@ class UserStats(BaseModel):
     nivel: int
     total_agendamentos: int
     missoes_concluidas: int
+
+
+class ChangePasswordRequest(BaseModel):
+    senhaAtual: str
+    novaSenha: str
+    confirmacaoNovaSenha: str

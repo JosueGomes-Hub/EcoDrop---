@@ -15,19 +15,21 @@ from app.models.missao import Missao, BonusMensal
 
 
 MATERIAIS = [
-    {"nome": "Plástico",   "slug": "plastico",   "categoria": "reciclavel", "unidade": "kg", "pontos_por_unidade": 8,  "valor_por_unidade": 0.80},
-    {"nome": "Vidro",      "slug": "vidro",      "categoria": "reciclavel", "unidade": "kg", "pontos_por_unidade": 6,  "valor_por_unidade": 0.60},
-    {"nome": "Metal",      "slug": "metal",      "categoria": "reciclavel", "unidade": "kg", "pontos_por_unidade": 10, "valor_por_unidade": 1.00},
-    {"nome": "Papel",      "slug": "papel",      "categoria": "reciclavel", "unidade": "kg", "pontos_por_unidade": 5,  "valor_por_unidade": 0.50},
-    {"nome": "Eletrônico", "slug": "eletronico", "categoria": "especial",   "unidade": "un", "pontos_por_unidade": 15, "valor_por_unidade": 3.00},
+    {"nome": "Garrafa de plástico 2 L",   "slug": "garrafa-plastico-2l",    "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
+    {"nome": "Garrafa de plástico até 1 L","slug": "garrafa-plastico-1l",   "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 1, "valor_por_unidade": 0.10},
+    {"nome": "20 tampinhas de garrafa",   "slug": "tampinha-garrafa",        "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 1, "valor_por_unidade": 0.10},
+    {"nome": "Garrafa de vinho 500 ml",   "slug": "garrafa-vinho-500ml",     "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 3, "valor_por_unidade": 0.30},
+    {"nome": "Garrafa de vinho 700 ml",   "slug": "garrafa-vinho-700ml",     "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 4, "valor_por_unidade": 0.40},
+    {"nome": "Papelão pequeno (caixa)",   "slug": "papelao-pequeno",         "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
+    {"nome": "Latinha de alumínio",       "slug": "latinha-aluminio",        "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
 ]
 
 PONTOS = [
-    {"nome": "EcoPonto Central",      "slug": "ecoponto-central",      "descricao": "Ponto completo para recicláveis domésticos.",          "endereco": "Av. Eduardo Ribeiro, 520",    "bairro": "Centro",        "cidade": "Manaus", "estado": "AM", "distancia_km": 0.30, "abre_as": "08:00:00", "fecha_as": "18:00:00", "materiais": ["plastico", "papel", "metal"]},
-    {"nome": "Coleta Norte",          "slug": "coleta-norte",          "descricao": "Coleta para vidro e plástico na zona norte.",          "endereco": "R. Recife, 230",              "bairro": "Adrianópolis",  "cidade": "Manaus", "estado": "AM", "distancia_km": 0.80, "abre_as": "08:00:00", "fecha_as": "17:00:00", "materiais": ["vidro", "plastico"]},
-    {"nome": "Ponto Eletrônico Sul",  "slug": "ponto-eletronico-sul",  "descricao": "Recebimento assistido de eletrônicos e baterias.",     "endereco": "Av. Constantino Nery, 1200", "bairro": "Flores",        "cidade": "Manaus", "estado": "AM", "distancia_km": 1.20, "abre_as": "09:00:00", "fecha_as": "18:00:00", "materiais": ["eletronico"]},
-    {"nome": "EcoPonto Leste",        "slug": "ecoponto-leste",        "descricao": "Ponto voltado para plástico e papel.",                 "endereco": "R. Belo Horizonte, 88",      "bairro": "Aleixo",        "cidade": "Manaus", "estado": "AM", "distancia_km": 1.90, "abre_as": "08:00:00", "fecha_as": "17:00:00", "materiais": ["plastico", "papel"]},
-    {"nome": "Shopping Coleta",       "slug": "shopping-coleta",       "descricao": "Ponto parceiro instalado no shopping.",                "endereco": "Shopping Manauara — Piso G1","bairro": "Adrianópolis",  "cidade": "Manaus", "estado": "AM", "distancia_km": 2.40, "abre_as": "10:00:00", "fecha_as": "22:00:00", "materiais": ["metal", "vidro", "plastico"]},
+    {"nome": "EcoPonto Central",     "slug": "ecoponto-central",     "descricao": "Ponto completo para recicláveis domésticos.",   "endereco": "Av. Eduardo Ribeiro, 520",     "bairro": "Centro",       "cidade": "Manaus", "estado": "AM", "distancia_km": 0.30, "abre_as": "08:00:00", "fecha_as": "18:00:00", "materiais": ["garrafa-plastico-2l", "garrafa-plastico-1l", "tampinha-garrafa", "papelao-pequeno", "latinha-aluminio"]},
+    {"nome": "Coleta Norte",         "slug": "coleta-norte",         "descricao": "Coleta para vidro e plástico na zona norte.",   "endereco": "R. Recife, 230",               "bairro": "Adrianópolis", "cidade": "Manaus", "estado": "AM", "distancia_km": 0.80, "abre_as": "08:00:00", "fecha_as": "17:00:00", "materiais": ["garrafa-vinho-500ml", "garrafa-vinho-700ml", "garrafa-plastico-2l", "garrafa-plastico-1l"]},
+    {"nome": "EcoPonto Leste",       "slug": "ecoponto-leste",       "descricao": "Ponto voltado para plástico e papelão.",        "endereco": "R. Belo Horizonte, 88",        "bairro": "Aleixo",       "cidade": "Manaus", "estado": "AM", "distancia_km": 1.90, "abre_as": "08:00:00", "fecha_as": "17:00:00", "materiais": ["garrafa-plastico-2l", "garrafa-plastico-1l", "papelao-pequeno"]},
+    {"nome": "Shopping Coleta",      "slug": "shopping-coleta",      "descricao": "Ponto parceiro instalado no shopping.",         "endereco": "Shopping Manauara — Piso G1",  "bairro": "Adrianópolis", "cidade": "Manaus", "estado": "AM", "distancia_km": 2.40, "abre_as": "10:00:00", "fecha_as": "22:00:00", "materiais": ["latinha-aluminio", "garrafa-vinho-500ml", "garrafa-vinho-700ml", "garrafa-plastico-2l", "tampinha-garrafa"]},
+    {"nome": "Ponto Sul",            "slug": "ponto-sul",            "descricao": "Coleta geral de recicláveis na zona sul.",      "endereco": "Av. Constantino Nery, 1200",   "bairro": "Flores",       "cidade": "Manaus", "estado": "AM", "distancia_km": 1.20, "abre_as": "09:00:00", "fecha_as": "18:00:00", "materiais": ["latinha-aluminio", "papelao-pequeno", "tampinha-garrafa", "garrafa-plastico-1l"]},
 ]
 
 PARCEIROS = [
@@ -49,9 +51,9 @@ hoje = date.today()
 fim = hoje + timedelta(days=30)
 
 MISSOES = [
-    {"slug": "plastico-2kg",       "titulo": "Recicle 2kg de Plástico", "descricao": "Entregue pelo menos 2kg de plástico para ganhar bônus.", "tipo": "material_weight", "material_slug": "plastico",   "meta_quantidade": 2.00,  "recompensa_tipo": "voucher", "recompensa_valor": 5.00,  "inicio_em": hoje, "fim_em": fim},
-    {"slug": "vidro-1kg",          "titulo": "Leve Vidro ao Ponto",     "descricao": "Ganhe bônus triplo ao iniciar sua reciclagem de vidro.", "tipo": "material_weight", "material_slug": "vidro",      "meta_quantidade": 1.00,  "recompensa_tipo": "voucher", "recompensa_valor": 9.00,  "inicio_em": hoje, "fim_em": fim},
-    {"slug": "eletronico-3-itens", "titulo": "Descarte Eletrônico",     "descricao": "Entregue 3 itens eletrônicos para liberar um bônus especial.", "tipo": "material_count", "material_slug": "eletronico", "meta_quantidade": 3.00, "recompensa_tipo": "voucher", "recompensa_valor": 15.00, "inicio_em": hoje, "fim_em": fim},
+    {"slug": "garrafas-plastico-10", "titulo": "Recicle 10 Garrafas de Plástico", "descricao": "Entregue pelo menos 10 garrafas plásticas para ganhar bônus.", "tipo": "material_count", "material_slug": "garrafa-plastico-2l",  "meta_quantidade": 10.00, "recompensa_tipo": "voucher", "recompensa_valor": 5.00,  "inicio_em": hoje, "fim_em": fim},
+    {"slug": "garrafas-vinho-5",     "titulo": "Leve 5 Garrafas de Vinho",       "descricao": "Descarte garrafas de vinho e ganhe pontos extras.",           "tipo": "material_count", "material_slug": "garrafa-vinho-500ml",  "meta_quantidade": 5.00,  "recompensa_tipo": "voucher", "recompensa_valor": 9.00,  "inicio_em": hoje, "fim_em": fim},
+    {"slug": "latinhas-20",          "titulo": "Junte 20 Latinhas",              "descricao": "Entregue 20 latinhas de alumínio para liberar um bônus especial.", "tipo": "material_count", "material_slug": "latinha-aluminio", "meta_quantidade": 20.00, "recompensa_tipo": "voucher", "recompensa_valor": 15.00, "inicio_em": hoje, "fim_em": fim},
 ]
 
 
