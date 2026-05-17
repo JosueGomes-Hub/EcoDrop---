@@ -186,6 +186,18 @@ function formatCurrency(value) {
   });
 }
 
+function formatPoints(value) {
+  return Math.floor(Number(value || 0)).toLocaleString("pt-BR");
+}
+
+const NIVEL_NAMES = {
+  1: "Iniciante Verde",
+  2: "Coletor Ativo",
+  3: "Reciclador Dedicado",
+  4: "Guardião da Floresta",
+  5: "Herói Amazônico",
+};
+
 function formatDateTime(value) {
   if (!value) {
     return "Agora";
@@ -287,15 +299,14 @@ function getPriorityLabel(priority) {
 }
 
 function getMissionRewardLabel(mission) {
-  if (mission.rewardType === "xp") {
-    return `+${Number(mission.rewardValue || 0).toLocaleString("pt-BR")} XP`;
-  }
-
-  return `+R$${formatCurrency(mission.rewardValue)}`;
+  const valor = mission.recompensa_valor ?? mission.rewardValue ?? 0;
+  return `+${formatPoints(valor)} pts`;
 }
 
 function getLevelLabel(user) {
-  return `Nível ${user.nivel} · ${user.levelTitle} 🌿`;
+  const nivel = user.nivel ?? 1;
+  const nome = user.nome_nivel ?? user.levelTitle ?? NIVEL_NAMES[nivel] ?? "Iniciante Verde";
+  return `Nível ${nivel} · ${nome} 🌿`;
 }
 
 function updateProfilePhoto(user = usuarioLogado || getStoredUser()) {
@@ -376,9 +387,11 @@ function removerFotoPerfil() {
 }
 
 function updateHome(user) {
+  const nivel = user.nivel ?? 1;
+  const nome = NIVEL_NAMES[nivel] ?? "Iniciante Verde";
   document.getElementById("home-nome").innerText = user.nome;
-  document.getElementById("home-summary").innerText = `Saldo pronto para uso · Nível ${user.nivel} 🌿`;
-  document.getElementById("stat-nivel").innerText = user.nivel;
+  document.getElementById("home-summary").innerText = `Prontos para usar · ${nome} 🌿`;
+  document.getElementById("stat-nivel").innerText = nivel;
 }
 
 function updateProfile(user) {
@@ -425,7 +438,7 @@ function renderHomeMissions(missions) {
             <div class="pb"><div class="pf" style="width:${percentual}%"></div></div>
             <p>${escapeHtml(progressText)}</p>
           </div>
-          <div class="mpts">+${mission.recompensa_xp ?? mission.xpReward ?? 0} XP</div>
+          <div class="mpts">+${formatPoints(mission.recompensa_valor ?? mission.rewardValue ?? 0)} pts</div>
         </div>
       `;
     })
@@ -445,7 +458,8 @@ function renderTransactions(transactions) {
 
   const items = transactions
     .map((transaction) => {
-      const isPositive = (transaction.tipo ?? transaction.type) === "entrada" || (transaction.value ?? 0) >= 0;
+      const tipo = transaction.tipo ?? transaction.type ?? "";
+      const isPositive = tipo === "credit" || tipo === "bonus" || tipo === "entrada" || (transaction.value ?? 0) >= 0;
       const signalClass = isPositive ? "plus" : "minus";
       const icon = isPositive ? "♻️" : "🏪";
       const valor = transaction.valor ?? Math.abs(transaction.value ?? 0);
@@ -456,10 +470,10 @@ function renderTransactions(transactions) {
         <div class="hi">
           <div class="hico" style="background:${isPositive ? "#e8f5ee" : "#fff3e0"}">${icon}</div>
           <div class="hinfo">
-            <h4>${descricao}</h4>
-            <p>${formatDateTime(data)} · ${isPositive ? "Crédito confirmado" : "Débito realizado"}</p>
+            <h4>${escapeHtml(descricao)}</h4>
+            <p>${formatDateTime(data)} · ${isPositive ? "Pontos creditados" : "Pontos utilizados"}</p>
           </div>
-          <div class="hval ${signalClass}">${isPositive ? "+" : "-"}R$${formatCurrency(Math.abs(valor))}</div>
+          <div class="hval ${signalClass}">${isPositive ? "+" : "-"}${formatPoints(Math.abs(valor))} pts</div>
         </div>
       `;
     })
@@ -470,16 +484,21 @@ function renderTransactions(transactions) {
 
 function updateWallet(wallet) {
   const saldo = wallet.saldo_atual ?? wallet.balance ?? 0;
+  const xpTotal = wallet.xp_total ?? 0;
   const nivel = wallet.nivel ?? wallet.level ?? 1;
+  const nomeNivel = wallet.nome_nivel ?? NIVEL_NAMES[nivel] ?? "Iniciante Verde";
+  const bonus = wallet.bonus_resgate ?? 0;
   const progresso = Math.round((wallet.progresso_proximo_nivel ?? wallet.progressPercent ?? 0) * 100);
 
-  document.getElementById("saldo-c").innerText = formatCurrency(saldo);
-  document.getElementById("saldo-h").innerText = formatCurrency(saldo);
-  document.getElementById("wallet-summary").innerText = `Cartão virtual ativo · Nível ${nivel} 🌿`;
-  document.getElementById("wallet-level-title").innerText = `🌿 Nível ${nivel}`;
+  document.getElementById("saldo-c").innerText = formatPoints(saldo);
+  document.getElementById("saldo-h").innerText = formatPoints(saldo);
+  document.getElementById("stat-reciclado").innerText = formatPoints(xpTotal);
+  document.getElementById("wallet-summary").innerText = `${nomeNivel} · Nível ${nivel} 🌿`;
+  document.getElementById("wallet-level-title").innerText = `🌿 Nível ${nivel} — ${nomeNivel}`;
   document.getElementById("wallet-level-progress").innerText = `${progresso}%`;
   document.getElementById("wallet-level-bar").style.width = `${progresso}%`;
-  document.getElementById("wallet-level-description").innerText = `${progresso}% para o próximo nível.`;
+  const bonusText = bonus > 0 ? ` · Bônus de ${Math.round(bonus * 100)}% no resgate` : "";
+  document.getElementById("wallet-level-description").innerText = `${progresso}% para o próximo nível${bonusText}.`;
 }
 
 function hydrateUser(user) {
@@ -538,15 +557,23 @@ function renderCollectionPoints(points) {
   }
 
   collectionPointsCache = points.reduce(
-    (accumulator, point) => ({
-      ...accumulator,
-      [point.id]: {
-        id: point.id,
-        nome: point.nome ?? point.name,
-        endereco: point.endereco ?? point.address,
-        materiais_aceitos: point.materiais_aceitos ?? point.materials ?? [],
-      },
-    }),
+    (accumulator, point) => {
+      const name = point.nome ?? point.name ?? "";
+      const slug = point.slug ?? String(point.id);
+      return {
+        ...accumulator,
+        [slug]: {
+          id: point.id,
+          slug,
+          name,
+          nome: name,
+          address: point.endereco ?? point.address ?? "",
+          endereco: point.endereco ?? point.address ?? "",
+          materials: point.materiais_aceitos ?? point.materials ?? [],
+          materiais_aceitos: point.materiais_aceitos ?? point.materials ?? [],
+        },
+      };
+    },
     {},
   );
 
@@ -565,8 +592,9 @@ function renderCollectionPoints(points) {
       const nome = point.nome ?? point.name;
       const endereco = point.endereco ?? point.address ?? "";
 
+      const slug = point.slug ?? String(point.id);
       return `
-        <div class="pc" onclick="openAgenda(${point.id})">
+        <div class="pc" onclick="openAgenda('${slug}')">
           <div class="pico" style="background:${background}">${icon}</div>
           <div class="pinfo">
             <h3>${escapeHtml(nome)}</h3>
@@ -575,7 +603,7 @@ function renderCollectionPoints(points) {
           </div>
           <div class="pdist">
             <div class="dt">Aberto</div>
-            <button class="ag-btn" onclick="event.stopPropagation();openAgenda(${point.id})">Agendar</button>
+            <button class="ag-btn" onclick="event.stopPropagation();openAgenda('${slug}')">Agendar</button>
           </div>
         </div>
       `;
@@ -773,7 +801,7 @@ function renderPartnerBenefits(partner) {
           ${benefit.discountValue !== null ? `<div class="meta-chip">Valor: R$${formatCurrency(benefit.discountValue)}</div>` : ""}
           ${benefit.periodLimit ? `<div class="meta-chip">Limite: ${benefit.periodLimit}/mês</div>` : ""}
         </div>
-        <button class="btn-primary" style="margin-top:12px" onclick="redeemBenefit(${benefit.id})">Resgatar benefício</button>
+        <button class="btn-primary" style="margin-top:12px" onclick="redeemBenefit(${benefit.id}, ${partner.id}, ${benefit.voucherCost ?? benefit.custo_voucher ?? 0})">Resgatar benefício</button>
       </div>
     `)
     .join("");
@@ -791,7 +819,7 @@ function openPartnerBenefits(partnerId) {
   openModal("mod-partner-benefits");
 }
 
-async function redeemBenefit(benefitId) {
+async function redeemBenefit(benefitId, parceiroId, custo) {
   if (!getStoredToken()) {
     showToast("Faça login para concluir o resgate.");
     goTo("login");
@@ -799,18 +827,10 @@ async function redeemBenefit(benefitId) {
   }
 
   try {
-    const result = await apiPost("/wallet/redeem", { benefitId });
-
-    if (usuarioLogado) {
-      usuarioLogado.saldo = result.wallet.balance;
-      saveSession(getStoredToken(), usuarioLogado);
-      hydrateUser(usuarioLogado);
-    }
-
-    updateWallet(result.wallet);
+    const result = await api.usarVoucher(parceiroId, custo);
     await Promise.all([loadWalletData(), loadPartners()]);
     closeModal("mod-partner-benefits");
-    showToast(`✅ Resgate gerado: ${result.redemption.code}`);
+    showToast(`✅ Benefício resgatado com sucesso.`);
   } catch (error) {
     showToast(resolveErrorMessage(error, "Não foi possível resgatar este benefício."));
   }
@@ -845,7 +865,7 @@ function renderSupportTickets(tickets) {
 
 async function loadSupportTickets() {
   try {
-    const tickets = await apiGet("/support/tickets");
+    const tickets = await api.getTickets();
     renderSupportTickets(tickets);
   } catch (error) {
     document.getElementById("support-ticket-list").innerHTML =
@@ -877,7 +897,7 @@ async function submitSupportTicket() {
   button.disabled = true;
 
   try {
-    const ticket = await apiPost("/support/tickets", {
+    const ticket = await api.criarTicket({
       category: document.getElementById("sup-category").value,
       subject: document.getElementById("sup-subject").value,
       priority: document.getElementById("sup-priority").value,
@@ -915,7 +935,7 @@ function renderSupportDetail(ticket) {
 
 async function openSupportTicket(ticketId) {
   try {
-    const ticket = await apiGet(`/support/tickets/${ticketId}`);
+    const ticket = await api.getTicket(ticketId);
     renderSupportDetail(ticket);
     document.getElementById("sup-reply").value = "";
     openModal("mod-support-detail");
@@ -929,9 +949,7 @@ async function sendSupportReply() {
   button.disabled = true;
 
   try {
-    const ticket = await apiPost(`/support/tickets/${selectedTicketId}/messages`, {
-      message: document.getElementById("sup-reply").value,
-    });
+    const ticket = await api.responderTicket(selectedTicketId, document.getElementById("sup-reply").value);
 
     renderSupportDetail(ticket);
     document.getElementById("sup-reply").value = "";
@@ -975,13 +993,13 @@ function renderDeliveries(deliveries) {
 }
 
 async function loadAppointmentsData() {
-  appointmentsCache = await apiGet("/appointments/me");
+  appointmentsCache = await api.getAgendamentos();
   return appointmentsCache;
 }
 
 async function loadUserDeliveries() {
   try {
-    deliveriesCache = await apiGet("/deliveries/me");
+    deliveriesCache = await api.getMinhasEntregas();
     renderDeliveries(deliveriesCache);
   } catch (error) {
     document.getElementById("delivery-list").innerHTML =
@@ -1098,7 +1116,7 @@ async function submitDelivery() {
   button.disabled = true;
 
   try {
-    const delivery = await apiPost("/deliveries", {
+    const delivery = await api.criarEntrega({
       pointSlug,
       appointmentId: document.getElementById("del-appointment").value || null,
       userNotes: document.getElementById("del-notes").value,
@@ -1143,7 +1161,7 @@ function renderOperatorPendingDeliveries(deliveries) {
 
 async function loadOperatorPendingDeliveries() {
   try {
-    operatorPendingCache = await apiGet("/deliveries/operator/pending");
+    operatorPendingCache = await api.getEntregasPendentes();
     renderOperatorPendingDeliveries(operatorPendingCache);
   } catch (error) {
     document.getElementById("operator-delivery-list").innerHTML =
@@ -1201,7 +1219,7 @@ async function submitOperatorReview(status) {
   rejectButton.disabled = true;
 
   try {
-    operatorPendingCache = await apiPatch(`/deliveries/${selectedOperatorDeliveryId}/review`, payload);
+    operatorPendingCache = await api.revisarEntrega(selectedOperatorDeliveryId, payload);
     renderOperatorPendingDeliveries(operatorPendingCache);
     closeModal("mod-operator-review");
     showToast(status === "confirmed" ? "✅ Entrega confirmada com sucesso." : "✅ Entrega rejeitada com sucesso.");
@@ -1298,9 +1316,9 @@ async function salvarPerfil() {
   saveButton.disabled = true;
 
   try {
-    const result = await apiPut("/users/me", payload);
-    saveSession(result.token || getStoredToken(), result.usuario);
-    hydrateUser(result.usuario);
+    const result = await api.updateMe(payload);
+    saveSession(getStoredToken(), result);
+    hydrateUser(result);
     await loadCollectionPoints();
     closeProfileEditModal();
     showToast("✅ Dados atualizados com sucesso.");
@@ -1328,7 +1346,7 @@ async function alterarSenha() {
   saveButton.disabled = true;
 
   try {
-    const result = await apiPatch("/users/me/password", payload);
+    const result = await api.changePassword(payload);
     closePasswordModal();
     showToast(`✅ ${result.message || "Senha atualizada com sucesso."}`);
   } catch (error) {
@@ -1506,9 +1524,11 @@ async function confirmarAgenda() {
 
   try {
     await api.criarAgendamento({
-      ponto_id: agendaAtual.id ?? agendaAtual.slug,
-      data_agendada: slotSelecionado.date || new Date().toISOString(),
-      observacao: null,
+      ponto_id: agendaAtual.id,
+      data_agendada: slotSelecionado.date,
+      janela_inicio: slotSelecionado.startTime,
+      janela_fim: slotSelecionado.endTime,
+      observacoes: null,
     });
 
     closeModal("mod-agenda");
@@ -1521,10 +1541,14 @@ async function confirmarAgenda() {
 }
 
 async function fazerCadastro() {
-  const nome = `${document.getElementById("c-nome").value} ${document.getElementById("c-sob").value}`.trim();
   const payload = {
-    nome,
+    nome: document.getElementById("c-nome").value.trim(),
+    sobrenome: document.getElementById("c-sob").value.trim(),
     cpf: document.getElementById("c-cpf").value,
+    telefone: document.getElementById("c-tel").value,
+    cep: document.getElementById("c-cep").value,
+    cidade: document.getElementById("c-cid").value.trim(),
+    estado: document.getElementById("c-est").value,
     email: document.getElementById("c-email").value,
     senha: document.getElementById("c-senha").value,
   };

@@ -459,6 +459,16 @@ body {
   font-weight: 900;
   margin: 3px 0 1px;
   line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.vc-pts-unit {
+  font-family: "Sora", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.5px;
 }
 .vc-sub {
   color: rgba(255, 255, 255, 0.72);
@@ -862,6 +872,9 @@ body {
   font-weight: 900;
   line-height: 1.1;
   margin-top: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }
 .cs-sub {
   color: rgba(255, 255, 255, 0.68);

@@ -1,23 +1,31 @@
-from datetime import datetime
+from datetime import date, time
 from pydantic import BaseModel
 
 
 class PontoColetaResponse(BaseModel):
     id: int
     nome: str
-    endereco: str | None
-    lat: float | None
-    lng: float | None
-    materiais_aceitos: list
-    ativo: bool
+    slug: str
+    descricao: str | None
+    endereco: str
+    bairro: str | None
+    cidade: str
+    estado: str
+    distancia_km: float | None
+    abre_as: time | None
+    fecha_as: time | None
+    status: str
+    materiais_aceitos: list[str] = []
 
     model_config = {"from_attributes": True}
 
 
 class AgendamentoCreate(BaseModel):
     ponto_id: int
-    data_agendada: datetime
-    observacao: str | None = None
+    data_agendada: date
+    janela_inicio: time
+    janela_fim: time
+    observacoes: str | None = None
 
 
 class AgendamentoUpdate(BaseModel):
@@ -27,8 +35,10 @@ class AgendamentoUpdate(BaseModel):
 class AgendamentoResponse(BaseModel):
     id: int
     ponto_id: int
-    data_agendada: datetime
+    data_agendada: date
+    janela_inicio: time
+    janela_fim: time
     status: str
-    observacao: str | None
+    observacoes: str | None
 
     model_config = {"from_attributes": True}

@@ -11,8 +11,12 @@ router = APIRouter(prefix="/coleta", tags=["coleta"])
 
 
 @router.get("/pontos", response_model=list[PontoColetaResponse])
-def listar_pontos(material: str | None = Query(None), db: Session = Depends(get_db)):
-    return coleta_service.listar_pontos(db, material)
+def listar_pontos(
+    material: str | None = Query(None),
+    city: str | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    return coleta_service.listar_pontos(db, material, city)
 
 
 @router.get("/pontos/{ponto_id}", response_model=PontoColetaResponse)

@@ -6,10 +6,13 @@ from app.config import settings
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors(), "body": exc.body},
+    errors = exc.errors()
+    # Formata como string legível: "campo: mensagem"
+    msgs = "; ".join(
+        f"{' → '.join(str(l) for l in e['loc'] if l != 'body')}: {e['msg']}"
+        for e in errors
     )
+    return JSONResponse(status_code=422, content={"detail": msgs})
 
 
 async def http_exception_handler(request: Request, exc: HTTPException):

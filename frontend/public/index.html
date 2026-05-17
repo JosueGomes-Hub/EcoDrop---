@@ -17,10 +17,9 @@
   <div class="screen active" id="splash">
     <div class="splash-circles"><div class="sc sc1"></div><div class="sc sc2"></div><div class="sc sc3"></div></div>
     <div class="splash-body">
-      <div class="splash-ico">🌿</div>
       <img src="assets/Logo.png" alt="EcoDrop" class="splash-logo"/>
       <div class="splash-pill">Recicle · Ganhe · Preserve</div>
-      <div class="splash-desc">Leve seu material reciclável aos pontos de coleta e ganhe VoucherVerde para usar onde quiser.</div>
+      <div class="splash-desc">Leve seu material reciclável aos pontos de coleta e ganhe Eco Points para trocar em descontos e serviços parceiros.</div>
       <div class="splash-btns">
         <button class="btn-primary" onclick="goTo('login')">Entrar na minha conta</button>
         <button class="btn-ghost" onclick="goTo('cadastro')">Criar conta gratuita</button>
@@ -52,7 +51,7 @@
       <button class="back-btn" onclick="goTo('splash')">←</button>
       <div class="hd-row">
         <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
-        <div><h1>Criar conta 🌱</h1><p>Comece a reciclar e ganhar VoucherVerde</p></div>
+        <div><h1>Criar conta 🌱</h1><p>Comece a reciclar e acumular Eco Points</p></div>
       </div>
     </div>
     <div class="auth-body">
@@ -96,14 +95,14 @@
       </div>
     </div>
     <div class="voucher-card">
-      <div class="vc-lbl">VoucherVerde Disponível</div>
-      <div class="vc-val">R$ <span id="saldo-h">47,50</span></div>
-      <div class="vc-sub" id="home-summary">Saldo pronto para uso · Nível 1 🌿</div>
+      <div class="vc-lbl">Eco Points Disponíveis</div>
+      <div class="vc-val"><span id="saldo-h">0</span><span class="vc-pts-unit"> pts</span></div>
+      <div class="vc-sub" id="home-summary">Prontos para usar · Nível 1 🌿</div>
       <div class="vc-badge"><div class="bi">♻️</div><div class="bt">Ativo</div></div>
     </div>
     <div class="stats-row">
       <div class="stat-c"><div class="sn" id="stat-entregas">0</div><div class="sl">Entregas</div></div>
-      <div class="stat-c"><div class="sn" id="stat-reciclado">0 kg</div><div class="sl">Reciclado</div></div>
+      <div class="stat-c"><div class="sn" id="stat-reciclado">0</div><div class="sl">Pts Acumulados</div></div>
       <div class="stat-c"><div class="sn" id="stat-nivel">1</div><div class="sl">Nível</div></div>
     </div>
     <div class="hscroll">
@@ -114,8 +113,8 @@
       <div class="sec-t">🔥 Bônus do Mês</div>
       <div class="mc">
         <div class="mi" style="background:#fff3e0">🏆</div>
-        <div class="minfo"><h3>Meta: 10 kg em Abril</h3><div class="pb"><div class="pf" style="width:38%"></div></div><p>3,8 kg / 10 kg — Bônus R$20</p></div>
-        <div class="mpts">+R$20</div>
+        <div class="minfo"><h3>Meta: 30 reciclagens em Abril</h3><div class="pb"><div class="pf" style="width:38%"></div></div><p>12 / 30 itens — Bônus 20 pts</p></div>
+        <div class="mpts">+20 pts</div>
       </div>
     </div>
   </div>
@@ -125,7 +124,7 @@
     <div class="mapa-hd">
       <div class="hd-row">
         <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
-        <div><h1>🗺️ Pontos de Coleta</h1><p>Leve, recicle e ganhe VoucherVerde</p></div>
+        <div><h1>🗺️ Pontos de Coleta</h1><p>Leve, recicle e ganhe Eco Points</p></div>
       </div>
     </div>
     <div class="filtros">
@@ -160,20 +159,20 @@
     <div class="cart-hd">
       <div class="hd-row">
         <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
-        <div><h1>💳 Minha Carteira</h1><p>Seu VoucherVerde acumulado</p></div>
+        <div><h1>💳 Minha Carteira</h1><p>Seus Eco Points acumulados</p></div>
       </div>
     </div>
     <div class="cart-saldo">
-      <div class="cs-lbl">VoucherVerde Disponível</div>
-      <div class="cs-val">R$ <span id="saldo-c">47,50</span></div>
-      <div class="cs-sub" id="wallet-summary">Cartão virtual ativo · Nível 1 🌿</div>
+      <div class="cs-lbl">Eco Points Disponíveis</div>
+      <div class="cs-val"><span id="saldo-c">0</span><span class="vc-pts-unit"> pts</span></div>
+      <div class="cs-sub" id="wallet-summary">Prontos para usar · Nível 1 🌿</div>
       <div class="cs-acts">
-        <button class="cs-btn" onclick="openRedeemPartners()">💳 Usar Voucher</button>
+        <button class="cs-btn" onclick="openRedeemPartners()">💳 Usar Eco Points</button>
         <button class="cs-btn" onclick="goTo('parceiros');setNav('parceiros')">🏪 Ver Parceiros</button>
       </div>
     </div>
     <div class="nivel-wrap">
-      <div class="nivel-top"><h3 id="wallet-level-title">🌿 Nível 1 — Semente da Floresta</h3><span id="wallet-level-progress">0%</span></div>
+      <div class="nivel-top"><h3 id="wallet-level-title">🌿 Nível 1 — Iniciante Verde</h3><span id="wallet-level-progress">0%</span></div>
       <div class="nbg"><div class="nfill" id="wallet-level-bar" style="width:0%"></div></div>
       <div class="ndesc" id="wallet-level-description">Faça sua primeira entrega confirmada para começar a subir de nível.</div>
     </div>
@@ -187,7 +186,7 @@
     <div class="parc-hd">
       <div class="hd-row">
         <img src="assets/Logo.png" alt="EcoDrop" class="screen-logo"/>
-        <div><h1>🏪 Parceiros</h1><p>Use seu VoucherVerde nestes estabelecimentos</p></div>
+        <div><h1>🏪 Parceiros</h1><p>Use seus Eco Points nestes estabelecimentos</p></div>
       </div>
     </div>
     <div class="pscr2" id="partners-list">
@@ -211,7 +210,7 @@
         <button type="button" id="profile-photo-remove" onclick="removerFotoPerfil()">Remover</button>
       </div>
       <div class="perf-nome" id="perf-nome">Usuário</div>
-      <div class="perf-nivel" id="perf-nivel">Nível 1 · Semente da Floresta 🌿</div>
+      <div class="perf-nivel" id="perf-nivel">Nível 1 · Iniciante Verde 🌿</div>
     </div>
     <div class="perf-scr">
       <div class="info-c">
@@ -244,7 +243,7 @@
     <div class="atend-scr">
       <div class="atend-card" onclick="goTo('carteira');setNav('carteira')">
         <div class="info-ico">💳</div>
-        <div class="atend-info"><h4>Minha conta</h4><p>Ver saldo de VoucherVerde e nível atual</p></div>
+        <div class="atend-info"><h4>Minha conta</h4><p>Ver saldo de Eco Points e nível atual</p></div>
         <div class="parr">›</div>
       </div>
       <div class="atend-card" onclick="openDeliveriesModal()">
@@ -264,7 +263,7 @@
       </div>
       <div class="atend-card" onclick="goTo('parceiros');setNav('parceiros')">
         <div class="info-ico">🏪</div>
-        <div class="atend-info"><h4>Parceiros</h4><p>Onde usar seu VoucherVerde</p></div>
+        <div class="atend-info"><h4>Parceiros</h4><p>Onde usar seus Eco Points</p></div>
         <div class="parr">›</div>
       </div>
       <div class="atend-card" onclick="openPasswordModal()">
