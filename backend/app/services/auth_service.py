@@ -27,10 +27,6 @@ def register(db: Session, data: UserCreate) -> UserResponse:
         nome=data.nome,
         sobrenome=data.sobrenome,
         cpf=data.cpf,
-        telefone=data.telefone,
-        cep=data.cep,
-        cidade=data.cidade,
-        estado=data.estado,
         email=data.email,
         senha=hash_password(data.senha),
     )
