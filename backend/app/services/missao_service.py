@@ -33,6 +33,67 @@ def get_ativas(db: Session, user_id: int) -> list[MissaoResponse]:
     return [_to_response(m, progressos.get(m.id)) for m in missoes]
 
 
+def atualizar_missoes_por_entrega(db: Session, usuario_id: int, itens: list) -> None:
+    """Atualiza o progresso de todas as missões ativas com base nos itens de uma entrega."""
+    from datetime import datetime
+    from app.services.voucher_service import creditar
+    from app.models.user import User
+
+    hoje = datetime.now().date()
+    missoes = (
+        db.query(Missao)
+        .filter(Missao.status == "active", Missao.inicio_em <= hoje, Missao.fim_em >= hoje)
+        .all()
+    )
+
+    usuario = db.get(User, usuario_id)
+
+    for missao in missoes:
+        incremento = 0
+        for item in itens:
+            if missao.tipo == "material_count" and (missao.material_id is None or missao.material_id == item.material_id):
+                incremento += int(item.quantidade)
+            elif missao.tipo == "material_weight" and (missao.material_id is None or missao.material_id == item.material_id):
+                incremento += float(item.quantidade)
+
+        if incremento <= 0:
+            continue
+
+        mu = db.query(MissaoUsuario).filter(
+            MissaoUsuario.missao_id == missao.id,
+            MissaoUsuario.usuario_id == usuario_id,
+        ).first()
+
+        if not mu:
+            mu = MissaoUsuario(
+                missao_id=missao.id,
+                usuario_id=usuario_id,
+                progresso_atual=0,
+                status="active",
+            )
+            db.add(mu)
+            db.flush()
+
+        if mu.status == "completed":
+            continue
+
+        mu.progresso_atual = float(mu.progresso_atual) + incremento
+
+        if float(mu.progresso_atual) >= float(missao.meta_quantidade):
+            mu.status = "completed"
+            mu.concluida_em = datetime.now()
+            mu.recompensa_creditada_em = datetime.now()
+            if missao.recompensa_tipo == "xp":
+                usuario.xp_total += int(missao.recompensa_valor)
+            elif missao.recompensa_tipo == "voucher":
+                creditar(
+                    db, usuario_id,
+                    Decimal(str(missao.recompensa_valor)),
+                    f"Recompensa missão: {missao.titulo}",
+                    origem="missao_concluida",
+                )
+
+
 def atualizar_progresso(db: Session, user_id: int, material_id: int, quantidade: Decimal) -> None:
     hoje = date.today()
     missoes = (

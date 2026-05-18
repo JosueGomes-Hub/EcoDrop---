@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -63,8 +64,12 @@ def get_historico(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> 
     return [TransacaoResponse.model_validate(r) for r in rows]
 
 
-def usar(db: Session, user_id: int, parceiro_id: int, valor: Decimal) -> Decimal:
+def usar(db: Session, user_id: int, parceiro_id: int, beneficio_id: int, valor: Decimal) -> Decimal:
+    import uuid
+    from datetime import timedelta
     from app.models.user import User
+    from app.models.parceiro import ResgateVoucher
+
     user = db.query(User).filter_by(id=user_id).with_for_update().first()
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Usuário não encontrado")
@@ -80,6 +85,17 @@ def usar(db: Session, user_id: int, parceiro_id: int, valor: Decimal) -> Decimal
         descricao=f"Resgate parceiro #{parceiro_id} — benefício efetivo: {valor_efetivo} pts",
         referencia_id=parceiro_id,
     )
+    agora = datetime.now()
+    resgate = ResgateVoucher(
+        usuario_id=user_id,
+        beneficio_id=beneficio_id,
+        parceiro_id=parceiro_id,
+        valor_debitado=float(valor),
+        codigo_resgate=str(uuid.uuid4())[:20].upper(),
+        status="generated",
+        expira_em=agora + timedelta(days=30),
+    )
+    db.add(resgate)
     db.commit()
     return valor_efetivo
 

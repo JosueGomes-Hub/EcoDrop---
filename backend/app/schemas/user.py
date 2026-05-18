@@ -6,12 +6,9 @@ class UserCreate(BaseModel):
     nome: str
     sobrenome: str
     cpf: str
-    telefone: str
-    cep: str
-    cidade: str
-    estado: str
     email: EmailStr
     senha: str
+    confirmacaoSenha: str
 
     @field_validator("cpf")
     @classmethod
@@ -21,6 +18,13 @@ class UserCreate(BaseModel):
             raise ValueError("CPF deve ter 11 dígitos")
         return digits
 
+    @field_validator("confirmacaoSenha")
+    @classmethod
+    def validate_password_match(cls, v: str, info) -> str:
+        if 'senha' in info.data and v != info.data['senha']:
+            raise ValueError("As senhas não coincidem")
+        return v
+
 
 class UserUpdate(BaseModel):
     nome: str | None = None
@@ -28,6 +32,9 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     telefone: str | None = None
     cep: str | None = None
+    rua: str | None = None
+    numero: str | None = None
+    bairro: str | None = None
     cidade: str | None = None
     estado: str | None = None
 
@@ -38,10 +45,13 @@ class UserResponse(BaseModel):
     sobrenome: str
     email: str
     cpf: str
-    telefone: str
-    cep: str
-    cidade: str
-    estado: str
+    telefone: str | None = None
+    cep: str | None = None
+    rua: str | None = None
+    numero: str | None = None
+    bairro: str | None = None
+    cidade: str | None = None
+    estado: str | None = None
     role: str
     saldo: float
     xp_total: int

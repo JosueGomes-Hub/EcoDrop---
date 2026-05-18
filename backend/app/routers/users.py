@@ -12,6 +12,8 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
+    from app.services.voucher_service import calcular_nivel
+    current_user.nivel = calcular_nivel(current_user.xp_total)
     return current_user
 
 
@@ -28,9 +30,10 @@ def get_stats(db: Session = Depends(get_db), current_user: User = Depends(get_cu
     missoes_ok = db.query(MissaoUsuario).filter(
         MissaoUsuario.usuario_id == current_user.id, MissaoUsuario.status == "completed"
     ).count()
+    from app.services.voucher_service import calcular_nivel
     return UserStats(
         xp_total=current_user.xp_total,
-        nivel=current_user.nivel,
+        nivel=calcular_nivel(current_user.xp_total),
         total_agendamentos=total_ag,
         missoes_concluidas=missoes_ok,
     )

@@ -15,13 +15,13 @@ from app.models.missao import Missao, BonusMensal
 
 
 MATERIAIS = [
-    {"nome": "Garrafa de plástico 2 L",   "slug": "garrafa-plastico-2l",    "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
-    {"nome": "Garrafa de plástico até 1 L","slug": "garrafa-plastico-1l",   "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 1, "valor_por_unidade": 0.10},
-    {"nome": "20 tampinhas de garrafa",   "slug": "tampinha-garrafa",        "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 1, "valor_por_unidade": 0.10},
-    {"nome": "Garrafa de vinho 500 ml",   "slug": "garrafa-vinho-500ml",     "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 3, "valor_por_unidade": 0.30},
-    {"nome": "Garrafa de vinho 700 ml",   "slug": "garrafa-vinho-700ml",     "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 4, "valor_por_unidade": 0.40},
-    {"nome": "Papelão pequeno (caixa)",   "slug": "papelao-pequeno",         "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
-    {"nome": "Latinha de alumínio",       "slug": "latinha-aluminio",        "categoria": "reciclavel", "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
+    {"nome": "Garrafa de plástico 2 L",   "slug": "garrafa-plastico-2l",    "categoria": "plastico",   "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
+    {"nome": "Garrafa de plástico até 1 L","slug": "garrafa-plastico-1l",   "categoria": "plastico",   "unidade": "un", "pontos_por_unidade": 1, "valor_por_unidade": 0.10},
+    {"nome": "20 tampinhas de garrafa",   "slug": "tampinha-garrafa",        "categoria": "plastico",   "unidade": "un", "pontos_por_unidade": 1, "valor_por_unidade": 0.10},
+    {"nome": "Garrafa de vinho 500 ml",   "slug": "garrafa-vinho-500ml",     "categoria": "vidro",      "unidade": "un", "pontos_por_unidade": 3, "valor_por_unidade": 0.30},
+    {"nome": "Garrafa de vinho 700 ml",   "slug": "garrafa-vinho-700ml",     "categoria": "vidro",      "unidade": "un", "pontos_por_unidade": 4, "valor_por_unidade": 0.40},
+    {"nome": "Papelão pequeno (caixa)",   "slug": "papelao-pequeno",         "categoria": "papel",      "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
+    {"nome": "Latinha de alumínio",       "slug": "latinha-aluminio",        "categoria": "metal",      "unidade": "un", "pontos_por_unidade": 2, "valor_por_unidade": 0.20},
 ]
 
 PONTOS = [
@@ -68,6 +68,8 @@ def seed():
                 obj = Material(**m)
                 db.add(obj)
                 db.flush()
+            else:
+                obj.categoria = m["categoria"]
             mat_map[m["slug"]] = obj
 
         # Pontos de coleta + ponto_materiais

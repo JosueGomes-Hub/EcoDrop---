@@ -48,7 +48,7 @@ def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
-from app.routers import auth, users, vouchers, coletas, missoes, parceiros, totem, deliveries, suporte
+from app.routers import auth, users, vouchers, coletas, missoes, parceiros, totem, deliveries, suporte, admin
 
 app.include_router(auth.router)
 app.include_router(users.router)
@@ -59,3 +59,4 @@ app.include_router(parceiros.router)
 app.include_router(totem.router)
 app.include_router(deliveries.router)
 app.include_router(suporte.router)
+app.include_router(admin.router)

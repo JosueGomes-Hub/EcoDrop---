@@ -19,7 +19,7 @@ class ColetaRepo(CRUDBase[PontoColeta]):
             q = (
                 q.join(PontoMaterial, PontoMaterial.ponto_id == PontoColeta.id)
                 .join(Material, Material.id == PontoMaterial.material_id)
-                .filter(Material.slug == material)
+                .filter(Material.categoria == material)
             )
         return q.all()
 

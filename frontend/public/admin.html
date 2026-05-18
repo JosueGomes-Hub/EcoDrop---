@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EcoDrop Admin</title>
+<link rel="icon" type="image/x-icon" sizes="16x16" href="assets/16.ico"/>
+<link rel="icon" type="image/x-icon" sizes="32x32" href="assets/32.ico"/>
+<link rel="icon" type="image/x-icon" sizes="48x48" href="assets/48.ico"/>
+<link rel="icon" type="image/x-icon" sizes="64x64" href="assets/64.ico"/>
+<link rel="icon" type="image/x-icon" sizes="128x128" href="assets/128.ico"/>
+<link rel="icon" type="image/x-icon" sizes="256x256" href="assets/256.ico"/>
+<link rel="apple-touch-icon" href="assets/128.ico"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--g1:#0a2e1f;--g2:#145c3a;--gv:#27c97a;--gl:#b7f0d4;--bg:#f7f4ef;--branco:#fff;--cinza:#6b7280;--erro:#e53e3e;--sombra:rgba(10,46,31,.13)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Sora",sans-serif;background:var(--g1);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── TOAST ── */
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 22px;border-radius:20px;font-size:.85rem;opacity:0;transition:opacity .3s;z-index:9999;pointer-events:none}
+#toast.show{opacity:1}
+
+/* ── LOGIN ── */
+#page-login{flex:1;display:flex;align-items:center;justify-content:center}
+.login-card{background:var(--branco);border-radius:20px;padding:40px 36px;width:360px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.login-card img{display:block;margin:0 auto 8px;width:56px}
+.login-card h1{text-align:center;font-size:1.3rem;color:var(--g1);margin-bottom:4px}
+.login-card p{text-align:center;color:var(--cinza);font-size:.85rem;margin-bottom:28px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:.72rem;font-weight:600;color:var(--g1);letter-spacing:.06em;margin-bottom:6px}
+.fg input{width:100%;padding:12px 14px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none;transition:border .2s}
+.fg input:focus{border-color:var(--gv)}
+.btn-primary{width:100%;padding:13px;background:var(--g2);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:4px}
+.btn-primary:hover{background:var(--g1)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+
+/* ── PAINEL ── */
+#page-admin{display:none;flex-direction:column;min-height:100vh;background:var(--bg)}
+.admin-header{background:var(--g1);color:#fff;padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+.admin-header .logo-row{display:flex;align-items:center;gap:10px}
+.admin-header img{width:36px}
+.admin-header h1{font-size:1.1rem;font-weight:700}
+.admin-header span{font-size:.8rem;opacity:.7}
+.btn-logout{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:7px 16px;border-radius:8px;font-family:inherit;font-size:.8rem;cursor:pointer}
+.btn-logout:hover{background:rgba(255,255,255,.1)}
+
+.admin-body{flex:1;padding:32px;max-width:1100px;margin:0 auto;width:100%}
+.search-bar{display:flex;gap:10px;margin-bottom:28px}
+.search-bar input{flex:1;padding:12px 16px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none;background:#fff}
+.search-bar input:focus{border-color:var(--gv)}
+.search-bar button{padding:12px 28px;background:var(--g2);color:#fff;border:none;border-radius:10px;font-family:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.search-bar button:hover{background:var(--g1)}
+
+.section-title{font-size:.95rem;font-weight:700;color:var(--g1);margin-bottom:14px;text-transform:uppercase;letter-spacing:.05em}
+.empty{color:var(--cinza);font-size:.9rem;padding:20px 0}
+
+/* ── TABELA ── */
+.table-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 2px 16px var(--sombra);background:var(--branco)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead{background:var(--g1);color:#fff}
+th{padding:13px 16px;text-align:left;font-weight:600;font-size:.75rem;letter-spacing:.06em;white-space:nowrap}
+th:first-child{border-radius:14px 0 0 0;width:48px}
+th:last-child{border-radius:0 14px 0 0;width:90px}
+td{padding:13px 16px;border-bottom:1px solid #f0ede8;color:#333;vertical-align:middle}
+td:first-child{color:var(--cinza);font-size:.8rem;font-weight:600}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f9f7f4}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.badge-scheduled{background:#e8f5e9;color:#2e7d32}
+.badge-confirmed{background:#e3f2fd;color:#1565c0}
+.badge-checked_in{background:#fff3e0;color:#e65100}
+.btn-validar{padding:7px 18px;background:var(--gv);color:var(--g1);border:none;border-radius:8px;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-validar:hover{background:#1fb368}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--branco);border-radius:18px;padding:32px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative}
+.modal h2{font-size:1.1rem;color:var(--g1);margin-bottom:4px}
+.modal .sub{font-size:.82rem;color:var(--cinza);margin-bottom:22px}
+.modal-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--cinza)}
+
+.itens-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.item-row{display:grid;grid-template-columns:1fr 120px 36px;gap:8px;align-items:center}
+.item-row select,.item-row input{padding:9px 10px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.85rem;outline:none}
+.item-row select:focus,.item-row input:focus{border-color:var(--gv)}
+.btn-add-item{background:none;border:1.5px dashed var(--gv);color:var(--g2);padding:8px;border-radius:8px;font-family:inherit;font-size:.82rem;cursor:pointer;width:100%;margin-bottom:14px}
+.btn-remove{background:none;border:none;color:var(--erro);font-size:1.1rem;cursor:pointer;line-height:1}
+.fg-obs label{font-size:.75rem;font-weight:600;color:var(--g1);letter-spacing:.05em;display:block;margin-bottom:6px}
+.fg-obs textarea{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:.85rem;resize:vertical;outline:none;min-height:70px}
+.fg-obs textarea:focus{border-color:var(--gv)}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.btn-cancelar{flex:1;padding:12px;background:#f0ede8;color:#555;border:none;border-radius:10px;font-family:inherit;font-weight:600;cursor:pointer}
+.btn-confirmar{flex:2;padding:12px;background:var(--g2);color:#fff;border:none;border-radius:10px;font-family:inherit;font-weight:600;cursor:pointer}
+.btn-confirmar:hover{background:var(--g1)}
+.btn-confirmar:disabled{opacity:.6;cursor:not-allowed}
+
+/* ── RESULTADO ── */
+.resultado{background:#e8f5e9;border-radius:12px;padding:18px;margin-top:16px;display:none}
+.resultado h3{color:#2e7d32;font-size:1rem;margin-bottom:8px}
+.resultado p{font-size:.88rem;color:#333;margin-bottom:4px}
+.resultado strong{color:var(--g1)}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- LOGIN -->
+<div id="page-login">
+  <div class="login-card">
+    <img src="assets/Logo.png" alt="EcoDrop"/>
+    <h1>Painel Administrativo</h1>
+    <p>Acesso restrito a administradores</p>
+    <div class="fg"><label>E-MAIL</label><input type="email" id="l-email" placeholder="admin@ecodrop.app"/></div>
+    <div class="fg"><label>SENHA</label><input type="password" id="l-senha" placeholder="••••••••"/></div>
+    <button class="btn-primary" id="btn-login">Entrar</button>
+  </div>
+</div>
+
+<!-- PAINEL -->
+<div id="page-admin">
+  <div class="admin-header">
+    <div class="logo-row">
+      <img src="assets/Logo.png" alt="EcoDrop"/>
+      <div><h1>EcoDrop Admin</h1><span id="admin-nome"></span></div>
+    </div>
+    <button class="btn-logout" id="btn-logout">Sair</button>
+  </div>
+
+  <div class="admin-body">
+    <div class="search-bar">
+      <input type="text" id="filtro" placeholder="Buscar por nome, e-mail ou CPF do usuário…"/>
+      <button id="btn-buscar">Buscar</button>
+    </div>
+
+    <div class="section-title">Agendamentos em aberto</div>
+    <div id="lista-agendamentos"><p class="empty">Use a busca acima para listar agendamentos.</p></div>
+  </div>
+</div>
+
+<!-- MODAL VALIDAR -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-fechar">✕</button>
+    <h2>Validar Coleta</h2>
+    <p class="sub" id="modal-sub"></p>
+
+    <div class="section-title" style="font-size:.82rem">Materiais coletados</div>
+    <div class="itens-list" id="itens-list"></div>
+    <button class="btn-add-item" id="btn-add-item">+ Adicionar material</button>
+
+    <div class="fg-obs"><label>OBSERVAÇÕES (opcional)</label><textarea id="obs-validar" placeholder="Ex: material em bom estado…"></textarea></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancelar" id="btn-cancelar">Cancelar</button>
+      <button class="btn-confirmar" id="btn-confirmar">Confirmar Coleta</button>
+    </div>
+
+    <div class="resultado" id="resultado">
+      <h3>✅ Coleta validada com sucesso!</h3>
+      <p>Protocolo: <strong id="res-protocolo"></strong></p>
+      <p>Usuário: <strong id="res-usuario"></strong></p>
+      <p>EcoPoints creditados: <strong id="res-pontos"></strong></p>
+      <p>Valor creditado: <strong id="res-valor"></strong></p>
+    </div>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

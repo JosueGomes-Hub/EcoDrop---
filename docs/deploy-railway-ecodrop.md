@@ -1,16 +1,18 @@
-# Deploy EcoDrop no Railway — Guia Completo
+# Deploy EcoDrop — Railway (Backend) + Vercel (Frontend)
 
-> **Stack:** Python 3.12 + FastAPI + SQLAlchemy + Alembic + PostgreSQL  
+> **Stack:** Python 3.12 + FastAPI + PostgreSQL · HTML/CSS/JS Vanilla  
 > **Branch:** `refactor/walter-ajustes-backend-2026-05-15`  
-> **Objetivo:** manter o backend disponível por 3 dias completos dentro do trial gratuito de $5
+> **Objetivo:** backend disponível por 3 dias completos + frontend estático permanente
 
 ---
 
-## Passo 1 — Ajustes no código
+## Parte 1 — Backend no Railway
+
+### Passo 1 — Ajustes no código (backend)
 
 Fazer as alterações abaixo na branch antes do deploy, depois commit e push.
 
-### `backend/requirements.txt`
+#### `backend/requirements.txt`
 
 Substituir `pymysql` e `cryptography` por `psycopg2-binary`:
 
@@ -32,7 +34,7 @@ email-validator==2.2.0
 
 ---
 
-### `backend/app/config.py`
+#### `backend/app/config.py`
 
 Simplificar para usar a `DATABASE_URL` injetada diretamente pelo Railway:
 
@@ -63,7 +65,7 @@ settings = Settings()
 
 ---
 
-### `backend/app/database.py`
+#### `backend/app/database.py`
 
 ```python
 from sqlalchemy import create_engine
@@ -84,7 +86,7 @@ def get_db():
 
 ---
 
-### `backend/Dockerfile`
+#### `backend/Dockerfile`
 
 Adicionar migration e seed automáticos no `CMD`:
 
@@ -103,23 +105,7 @@ CMD alembic upgrade head && python -m app.seed.seed_data && uvicorn app.main:app
 
 ---
 
-### `frontend/public/api.js`
-
-Substituir a linha de `API_BASE` pela URL gerada pelo Railway após o deploy:
-
-```javascript
-// de
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
-
-// para
-const API_BASE = "https://sua-url-gerada.up.railway.app";
-```
-
-> A URL exata só estará disponível após o Passo 6.
-
----
-
-## Passo 2 — Criar conta no Railway
+### Passo 2 — Criar conta no Railway
 
 1. Acesse [railway.app](https://railway.app)
 2. Clique em **Login with GitHub**
@@ -128,7 +114,7 @@ const API_BASE = "https://sua-url-gerada.up.railway.app";
 
 ---
 
-## Passo 3 — Criar o projeto e o banco PostgreSQL
+### Passo 3 — Criar o projeto e o banco PostgreSQL
 
 1. No dashboard → **New Project**
 2. Clique em **Add a service** → **Database** → **PostgreSQL**
@@ -136,7 +122,7 @@ const API_BASE = "https://sua-url-gerada.up.railway.app";
 
 ---
 
-## Passo 4 — Deploy do backend
+### Passo 4 — Deploy do backend
 
 1. Ainda no mesmo projeto → **Add a service** → **GitHub Repo**
 2. Selecione o repositório `EcoDrop---`
@@ -146,7 +132,7 @@ const API_BASE = "https://sua-url-gerada.up.railway.app";
 
 ---
 
-## Passo 5 — Variáveis de ambiente
+### Passo 5 — Variáveis de ambiente
 
 No serviço do backend → aba **Variables** → adicionar as seguintes variáveis:
 
@@ -162,7 +148,7 @@ No serviço do backend → aba **Variables** → adicionar as seguintes variáve
 
 ---
 
-## Passo 6 — Verificar o deploy
+### Passo 6 — Verificar o deploy do backend
 
 Após o build terminar, o Railway exibe a URL pública no formato:
 
@@ -170,18 +156,20 @@ Após o build terminar, o Railway exibe a URL pública no formato:
 https://ecodrop-backend-xxxx.up.railway.app
 ```
 
-Acesse os endpoints abaixo para confirmar que está tudo funcionando:
+Acesse os endpoints abaixo para confirmar:
 
 | Endpoint | Esperado |
 |---|---|
 | `/health` | `{"status": "ok", "version": "2.0.0"}` |
 | `/docs` | Swagger UI com todas as rotas listadas |
 
+> **Guarde essa URL** — ela será usada no passo do frontend.
+
 ---
 
-## Passo 7 — Keep-alive (obrigatório para 3 dias contínuos)
+### Passo 7 — Keep-alive (obrigatório para 3 dias contínuos)
 
-O Railway pode colocar o serviço em sleep se não houver tráfego. Para evitar isso:
+O Railway pode colocar o serviço em sleep sem tráfego. Para evitar:
 
 1. Acesse [uptimerobot.com](https://uptimerobot.com) e crie uma conta gratuita
 2. Clique em **New Monitor** e configure:
@@ -193,23 +181,137 @@ O Railway pode colocar o serviço em sleep se não houver tráfego. Para evitar 
 | URL | `https://sua-url.up.railway.app/health` |
 | Monitoring Interval | 5 minutes |
 
-3. Salve o monitor — ele fará ping a cada 5 minutos, mantendo o serviço ativo pelos 3 dias completos.
+3. Salve — o monitor fará ping a cada 5 minutos pelos 3 dias completos.
 
 ---
 
-## Resumo dos serviços no Railway
+## Parte 2 — Frontend no Vercel
 
-| Serviço | Função |
+### Passo 8 — Ajustes no código (frontend)
+
+Três arquivos precisam ser alterados antes do deploy.
+
+#### `frontend/public/index.html`
+
+Corrigir o caminho do favicon (linha 5):
+
+```html
+<!-- de -->
+<link rel="icon" type="image/png" href="/frontend/assets/Logo.png"/>
+
+<!-- para -->
+<link rel="icon" type="image/png" href="/assets/Logo.png"/>
+```
+
+---
+
+#### `frontend/public/api.js`
+
+Substituir a linha de `API_BASE` pela URL gerada pelo Railway no Passo 6:
+
+```javascript
+// de
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
+// para
+const API_BASE = "https://sua-url-gerada.up.railway.app";
+```
+
+---
+
+#### `frontend/public/vercel.json` ← arquivo novo
+
+Criar este arquivo dentro de `frontend/public/`:
+
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+Isso garante que o Vercel sirva o `index.html` para qualquer rota, necessário para o SPA funcionar corretamente.
+
+---
+
+### Passo 9 — Criar conta no Vercel
+
+1. Acesse [vercel.com](https://vercel.com)
+2. Clique em **Sign Up** → **Continue with GitHub**
+3. Autorize o acesso ao repositório do EcoDrop
+
+---
+
+### Passo 10 — Deploy do frontend
+
+1. No dashboard → **Add New** → **Project**
+2. Selecione o repositório `EcoDrop---`
+3. Na tela de configuração:
+
+| Campo | Valor |
 |---|---|
-| PostgreSQL | Banco de dados gerenciado — provisionado automaticamente |
-| Backend (Docker) | FastAPI + Alembic migrations + Seed de dados + Uvicorn |
+| **Framework Preset** | Other |
+| **Root Directory** | `frontend/public` |
+| **Build Command** | *(deixar vazio)* |
+| **Output Directory** | *(deixar vazio)* |
 
-**Custo estimado para 3 dias:** entre $0,10 e $0,30 — bem dentro dos $5 do trial.
+4. Clique em **Deploy**
+
+O Vercel detecta que é um site estático e publica automaticamente.
+
+---
+
+### Passo 11 — Verificar o deploy do frontend
+
+Após o deploy, o Vercel gera uma URL no formato:
+
+```
+https://ecodrop-xxxx.vercel.app
+```
+
+Acesse e confirme:
+- Splash screen carrega corretamente
+- Logo aparece (assets servindo)
+- Login funciona e chama o backend no Railway
+
+---
+
+## Resumo da arquitetura final
+
+```
+Usuário
+   │
+   ▼
+Vercel (frontend estático)
+https://ecodrop-xxxx.vercel.app
+   │  fetch() via api.js
+   ▼
+Railway (backend FastAPI)
+https://ecodrop-xxxx.up.railway.app
+   │  SQLAlchemy
+   ▼
+Railway (PostgreSQL)
+```
+
+---
+
+## Resumo dos serviços
+
+| Serviço | Plataforma | Função | Custo |
+|---|---|---|---|
+| PostgreSQL | Railway | Banco de dados gerenciado | dentro do trial $5 |
+| Backend (Docker) | Railway | FastAPI + Alembic + Seed | dentro do trial $5 |
+| Frontend (estático) | Vercel | HTML/CSS/JS Vanilla | **gratuito permanente** |
+
+**Custo estimado para 3 dias no Railway:** entre $0,10 e $0,30.  
+**Vercel:** gratuito sem limite de tempo para sites estáticos.
 
 ---
 
 ## Checklist final
 
+### Backend (Railway)
 - [ ] `requirements.txt` atualizado com `psycopg2-binary`
 - [ ] `config.py` usando `DATABASE_URL` direto
 - [ ] `database.py` simplificado
@@ -221,4 +323,12 @@ O Railway pode colocar o serviço em sleep se não houver tráfego. Para evitar 
 - [ ] Variáveis de ambiente configuradas
 - [ ] `/health` retornando `ok`
 - [ ] Monitor UptimeRobot ativo
+
+### Frontend (Vercel)
+- [ ] Favicon corrigido em `index.html`
 - [ ] `api.js` atualizado com a URL do Railway
+- [ ] `vercel.json` criado em `frontend/public/`
+- [ ] Commit e push das alterações
+- [ ] Conta Vercel criada e GitHub conectado
+- [ ] Deploy configurado com Root Directory `frontend/public`
+- [ ] Frontend acessível e conectado ao backend

@@ -183,56 +183,8 @@ def revisar_entrega(
         usuario.xp_total += total_pontos
 
         # Atualizar missões ativas
-        missoes = db.query(Missao).filter(
-            Missao.status == "active",
-            Missao.inicio_em <= datetime.now().date(),
-            Missao.fim_em >= datetime.now().date(),
-        ).all()
-
-        for missao in missoes:
-            incremento = 0
-            for item in entrega.itens:
-                if missao.tipo == "material_count" and (missao.material_id is None or missao.material_id == item.material_id):
-                    incremento += int(item.quantidade)
-                elif missao.tipo == "material_weight" and (missao.material_id is None or missao.material_id == item.material_id):
-                    incremento += float(item.quantidade)
-
-            if incremento <= 0:
-                continue
-
-            mu = db.query(MissaoUsuario).filter(
-                MissaoUsuario.missao_id == missao.id,
-                MissaoUsuario.usuario_id == entrega.usuario_id,
-            ).first()
-
-            if not mu:
-                mu = MissaoUsuario(
-                    missao_id=missao.id,
-                    usuario_id=entrega.usuario_id,
-                    progresso_atual=0,
-                    status="active",
-                )
-                db.add(mu)
-                db.flush()
-
-            if mu.status == "completed":
-                continue
-
-            mu.progresso_atual = float(mu.progresso_atual) + incremento
-
-            if float(mu.progresso_atual) >= float(missao.meta_quantidade):
-                mu.status = "completed"
-                mu.concluida_em = datetime.now()
-                mu.recompensa_creditada_em = datetime.now()
-                if missao.recompensa_tipo == "xp":
-                    usuario.xp_total += int(missao.recompensa_valor)
-                elif missao.recompensa_tipo == "voucher":
-                    creditar(
-                        db, usuario.id,
-                        Decimal(str(missao.recompensa_valor)),
-                        f"Recompensa missão: {missao.titulo}",
-                        origem="missao_concluida",
-                    )
+        from app.services.missao_service import atualizar_missoes_por_entrega
+        atualizar_missoes_por_entrega(db, entrega.usuario_id, entrega.itens)
 
         db.commit()
 

@@ -28,8 +28,6 @@ class ValidarCpfResponse(BaseModel):
 
 class FinalizarColetaRequest(BaseModel):
     usuario_id: int
-    missao_usuario_id: int | None = None
-    meta_quantidade: int | None = None
     quantidade_garrafas: int
 
 
@@ -198,20 +196,9 @@ def finalizar_coleta(data: FinalizarColetaRequest, db: Session = Depends(get_db)
         # 2.5 Atualizar XP do usuário
         usuario.xp_total += pontos
 
-        # 2.6 Atualizar progresso da missão (se houver)
-        if data.missao_usuario_id:
-            missao_usuario = db.get(MissaoUsuario, data.missao_usuario_id)
-            if missao_usuario:
-                missao_usuario.progresso_atual += total
-
-                # 2.7 Verificar e marcar conclusão
-                if data.meta_quantidade and missao_usuario.progresso_atual >= data.meta_quantidade:
-                    missao_usuario.status = "completed"
-                    missao_usuario.concluida_em = datetime.now()
-
-                    # Se missão tem recompensa em XP
-                    if missao_usuario.missao.recompensa_tipo == "xp":
-                        usuario.xp_total += int(missao_usuario.missao.recompensa_valor)
+        # 2.6 Atualizar missões ativas
+        from app.services.missao_service import atualizar_missoes_por_entrega
+        atualizar_missoes_por_entrega(db, usuario.id, [entrega_item])
 
         db.commit()
 
@@ -299,3 +286,48 @@ def missao_ativa(db: Session = Depends(get_db)):
         inicio_em=missao.inicio_em,
         fim_em=missao.fim_em
     )
+
+
+@router.get("/missoes/{usuario_id}")
+def listar_missoes_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    """Retorna todas as missões ativas do usuário para exibição no totem."""
+    from datetime import datetime
+
+    agora = datetime.now()
+
+    missoes = db.query(Missao).filter(
+        Missao.status == "active",
+        Missao.inicio_em <= agora,
+        Missao.fim_em >= agora
+    ).all()
+
+    progressos = {
+        mu.missao_id: mu
+        for mu in db.query(MissaoUsuario).filter(MissaoUsuario.usuario_id == usuario_id).all()
+    }
+
+    resultado = []
+    for m in missoes:
+        mu = progressos.get(m.id)
+        progresso = mu.progresso_atual if mu else 0
+        concluida = mu.status == "completed" if mu else False
+        percentual = float(min(progresso / m.meta_quantidade, 1.0)) if m.meta_quantidade else 0.0
+
+        resultado.append({
+            "id": m.id,
+            "slug": m.slug,
+            "titulo": m.titulo,
+            "descricao": m.descricao,
+            "tipo": m.tipo,
+            "meta_quantidade": float(m.meta_quantidade),
+            "recompensa_tipo": m.recompensa_tipo,
+            "recompensa_valor": float(m.recompensa_valor),
+            "inicio_em": m.inicio_em,
+            "fim_em": m.fim_em,
+            "status": m.status,
+            "progresso_atual": float(progresso),
+            "percentual": round(percentual, 4),
+            "concluida": concluida
+        })
+
+    return resultado
