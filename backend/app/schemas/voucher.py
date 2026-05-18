@@ -34,4 +34,5 @@ class TransacaoResponse(BaseModel):
 
 class UsarVoucherRequest(BaseModel):
     parceiro_id: int
+    beneficio_id: int
     valor: Decimal

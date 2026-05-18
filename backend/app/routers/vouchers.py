@@ -24,7 +24,7 @@ def historico(skip: int = Query(0), limit: int = Query(50), db: Session = Depend
 def usar(data: UsarVoucherRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     from app.services.voucher_service import _get_nivel_info
     nivel_info = _get_nivel_info(current_user.xp_total)
-    valor_efetivo = voucher_service.usar(db, current_user.id, data.parceiro_id, data.valor)
+    valor_efetivo = voucher_service.usar(db, current_user.id, data.parceiro_id, data.beneficio_id, data.valor)
     return UsarVoucherResponse(
         valor_pago=data.valor,
         valor_efetivo=valor_efetivo,

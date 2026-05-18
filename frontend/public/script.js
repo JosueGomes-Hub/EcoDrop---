@@ -489,7 +489,7 @@ function renderTransactions(transactions) {
   const items = transactions
     .map((transaction) => {
       const tipo = transaction.tipo ?? transaction.type ?? "";
-      const isPositive = tipo === "credit" || tipo === "bonus" || tipo === "entrada" || (transaction.value ?? 0) >= 0;
+      const isPositive = tipo === "credit" || tipo === "bonus" || tipo === "entrada";
       const signalClass = isPositive ? "plus" : "minus";
       const icon = isPositive ? "♻️" : "🏪";
       const valor = transaction.valor ?? Math.abs(transaction.value ?? 0);
@@ -816,31 +816,33 @@ async function openRedeemPartners() {
 function renderPartnerBenefits(partner) {
   const list = document.getElementById("partner-benefits-list");
 
-  document.getElementById("partner-benefits-tag").innerText = `${partner.logo} ${partner.category}`;
-  document.getElementById("partner-benefits-title").innerText = partner.name;
-  document.getElementById("partner-benefits-description").innerText = partner.description;
+  document.getElementById("partner-benefits-tag").innerText = `${partner.logo_emoji ?? ""} ${partner.categoria}`;
+  document.getElementById("partner-benefits-title").innerText = partner.nome;
+  document.getElementById("partner-benefits-description").innerText = partner.descricao;
 
-  if (!partner.benefits.length) {
+  const beneficios = partner.beneficios ?? [];
+
+  if (!beneficios.length) {
     list.innerHTML = '<div class="empty-state">Este parceiro ainda não possui benefícios ativos.</div>';
     return;
   }
 
-  list.innerHTML = partner.benefits
+  list.innerHTML = beneficios
     .map((benefit) => `
       <div class="benefit-card">
         <div class="benefit-head">
           <div>
-            <div class="benefit-title">${escapeHtml(benefit.title)}</div>
-            <div class="benefit-sub">${escapeHtml(benefit.description)}</div>
+            <div class="benefit-title">${escapeHtml(benefit.titulo)}</div>
+            <div class="benefit-sub">${escapeHtml(benefit.descricao)}</div>
           </div>
-          <div class="status-badge generated">${escapeHtml(benefit.type)}</div>
+          <div class="status-badge generated">${escapeHtml(benefit.tipo)}</div>
         </div>
         <div class="benefit-meta">
-          <div class="meta-chip">Custo: R$${formatCurrency(benefit.voucherCost)}</div>
-          ${benefit.discountValue !== null ? `<div class="meta-chip">Valor: R$${formatCurrency(benefit.discountValue)}</div>` : ""}
-          ${benefit.periodLimit ? `<div class="meta-chip">Limite: ${benefit.periodLimit}/mês</div>` : ""}
+          <div class="meta-chip">Custo: R$${formatCurrency(benefit.custo_voucher)}</div>
+          ${benefit.valor_desconto !== null ? `<div class="meta-chip">Valor: R$${formatCurrency(benefit.valor_desconto)}</div>` : ""}
+          ${benefit.limite_periodo ? `<div class="meta-chip">Limite: ${benefit.limite_periodo}/mês</div>` : ""}
         </div>
-        <button class="btn-primary" style="margin-top:12px" onclick="redeemBenefit(${benefit.id}, ${partner.id}, ${benefit.voucherCost ?? benefit.custo_voucher ?? 0})">Resgatar benefício</button>
+        <button class="btn-primary" style="margin-top:12px" onclick="redeemBenefit(${benefit.id}, ${partner.id}, ${benefit.custo_voucher ?? 0}, '${escapeHtml(benefit.titulo)}')">Resgatar benefício</button>
       </div>
     `)
     .join("");
@@ -866,7 +868,7 @@ async function redeemBenefit(benefitId, parceiroId, custo) {
   }
 
   try {
-    const result = await api.usarVoucher(parceiroId, custo);
+    const result = await api.usarVoucher(parceiroId, benefitId, custo);
     await Promise.all([loadWalletData(), loadPartners()]);
     closeModal("mod-partner-benefits");
     showToast(`✅ Benefício resgatado com sucesso.`);

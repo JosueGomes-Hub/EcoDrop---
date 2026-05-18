@@ -62,7 +62,7 @@ const api = {
   // Voucher / Carteira
   async getSaldo() { return this._get('/vouchers/saldo'); },
   async getHistorico(skip = 0, limit = 50) { return this._get(`/vouchers/historico?skip=${skip}&limit=${limit}`); },
-  async usarVoucher(parceiro_id, valor) { return this._post('/vouchers/usar', { parceiro_id, valor }); },
+  async usarVoucher(parceiro_id, beneficio_id, valor) { return this._post('/vouchers/usar', { parceiro_id, beneficio_id, valor }); },
 
   // Pontos de coleta
   async getPontos(material = null, city = null) {

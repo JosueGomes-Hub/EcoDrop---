@@ -28,8 +28,6 @@ class ValidarCpfResponse(BaseModel):
 
 class FinalizarColetaRequest(BaseModel):
     usuario_id: int
-    missao_usuario_id: int | None = None
-    meta_quantidade: int | None = None
     quantidade_garrafas: int
 
 
@@ -198,20 +196,9 @@ def finalizar_coleta(data: FinalizarColetaRequest, db: Session = Depends(get_db)
         # 2.5 Atualizar XP do usuário
         usuario.xp_total += pontos
 
-        # 2.6 Atualizar progresso da missão (se houver)
-        if data.missao_usuario_id:
-            missao_usuario = db.get(MissaoUsuario, data.missao_usuario_id)
-            if missao_usuario:
-                missao_usuario.progresso_atual += total
-
-                # 2.7 Verificar e marcar conclusão
-                if data.meta_quantidade and missao_usuario.progresso_atual >= data.meta_quantidade:
-                    missao_usuario.status = "completed"
-                    missao_usuario.concluida_em = datetime.now()
-
-                    # Se missão tem recompensa em XP
-                    if missao_usuario.missao.recompensa_tipo == "xp":
-                        usuario.xp_total += int(missao_usuario.missao.recompensa_valor)
+        # 2.6 Atualizar missões ativas
+        from app.services.missao_service import atualizar_missoes_por_entrega
+        atualizar_missoes_por_entrega(db, usuario.id, [entrega_item])
 
         db.commit()
 
