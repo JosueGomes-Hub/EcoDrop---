@@ -299,3 +299,48 @@ def missao_ativa(db: Session = Depends(get_db)):
         inicio_em=missao.inicio_em,
         fim_em=missao.fim_em
     )
+
+
+@router.get("/missoes/{usuario_id}")
+def listar_missoes_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    """Retorna todas as missões ativas do usuário para exibição no totem."""
+    from datetime import datetime
+
+    agora = datetime.now()
+
+    missoes = db.query(Missao).filter(
+        Missao.status == "active",
+        Missao.inicio_em <= agora,
+        Missao.fim_em >= agora
+    ).all()
+
+    progressos = {
+        mu.missao_id: mu
+        for mu in db.query(MissaoUsuario).filter(MissaoUsuario.usuario_id == usuario_id).all()
+    }
+
+    resultado = []
+    for m in missoes:
+        mu = progressos.get(m.id)
+        progresso = mu.progresso_atual if mu else 0
+        concluida = mu.status == "completed" if mu else False
+        percentual = float(min(progresso / m.meta_quantidade, 1.0)) if m.meta_quantidade else 0.0
+
+        resultado.append({
+            "id": m.id,
+            "slug": m.slug,
+            "titulo": m.titulo,
+            "descricao": m.descricao,
+            "tipo": m.tipo,
+            "meta_quantidade": float(m.meta_quantidade),
+            "recompensa_tipo": m.recompensa_tipo,
+            "recompensa_valor": float(m.recompensa_valor),
+            "inicio_em": m.inicio_em,
+            "fim_em": m.fim_em,
+            "status": m.status,
+            "progresso_atual": float(progresso),
+            "percentual": round(percentual, 4),
+            "concluida": concluida
+        })
+
+    return resultado

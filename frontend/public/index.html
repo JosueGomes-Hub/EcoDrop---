@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>EcoDrop</title>
-<link rel="icon" type="image/png" href="/frontend/assets/Logo.png"/>
+<link rel="icon" type="image/png" href="/assets/Logo.png"/>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/style.css"/>
 </head>
@@ -128,12 +128,12 @@
       </div>
     </div>
     <div class="filtros">
-      <div class="chip active" onclick="setChip(this)">Todos</div>
-      <div class="chip" onclick="setChip(this)">♻️ Plástico</div>
-      <div class="chip" onclick="setChip(this)">🔵 Vidro</div>
-      <div class="chip" onclick="setChip(this)">🥫 Metal</div>
-      <div class="chip" onclick="setChip(this)">📄 Papel</div>
-      <div class="chip" onclick="setChip(this)">🔋 Eletrônico</div>
+      <div class="chip active" data-slug="" onclick="setChip(this)">Todos</div>
+      <div class="chip" data-slug="plastico" onclick="setChip(this)">♻️ Plástico</div>
+      <div class="chip" data-slug="vidro" onclick="setChip(this)">🔵 Vidro</div>
+      <div class="chip" data-slug="metal" onclick="setChip(this)">🥫 Metal</div>
+      <div class="chip" data-slug="papel" onclick="setChip(this)">📄 Papel</div>
+      <div class="chip" data-slug="eletronico" onclick="setChip(this)">🔋 Eletrônico</div>
     </div>
     <div class="fake-map">
       <div class="mtex"></div>
@@ -261,16 +261,17 @@
         <div class="atend-info"><h4>Agendar entrega</h4><p>Escolha um horário para levar seu material</p></div>
         <div class="parr">›</div>
       </div>
+      <div class="atend-card" onclick="openMeusAgendamentos()">
+        <div class="info-ico">🗓️</div>
+        <div class="atend-info"><h4>Meus agendamentos</h4><p>Acompanhe e cancele seus agendamentos</p></div>
+        <div class="parr">›</div>
+      </div>
       <div class="atend-card" onclick="goTo('parceiros');setNav('parceiros')">
         <div class="info-ico">🏪</div>
         <div class="atend-info"><h4>Parceiros</h4><p>Onde usar seus Eco Points</p></div>
         <div class="parr">›</div>
       </div>
-      <div class="atend-card" onclick="openPasswordModal()">
-        <div class="info-ico">🔒</div>
-        <div class="atend-info"><h4>Alterar senha</h4><p>Redefinir sua senha de acesso</p></div>
-        <div class="parr">›</div>
-      </div>
+
       <div class="atend-card" onclick="openSupportModal()">
         <div class="info-ico">🤝</div>
         <div class="atend-info"><h4>Falar com suporte</h4><p>Abrir ticket e acompanhar atendimento</p></div>
@@ -280,11 +281,6 @@
         <div class="info-ico">🧾</div>
         <div class="atend-info"><h4>Operação do ponto</h4><p>Revisar entregas pendentes e creditar usuários</p></div>
         <div class="parr">›</div>
-      </div>
-      <div class="atend-card atend-sair" onclick="fazerLogout()">
-        <div class="info-ico" style="background:#fde8e8">🚪</div>
-        <div class="atend-info"><h4 style="color:var(--erro)">Sair</h4><p>Encerrar sessão e voltar ao início</p></div>
-        <div class="parr" style="color:var(--erro)">›</div>
       </div>
     </div>
   </div>
@@ -482,7 +478,7 @@
     <div class="nav-item active" id="nav-home" onclick="goTo('home');setNav('home')"><div class="nav-ico">🏠</div><div class="nav-lbl">Início</div></div>
     <div class="nav-item" id="nav-mapa" onclick="goTo('mapa');setNav('mapa')"><div class="nav-ico">🗺️</div><div class="nav-lbl">Mapa</div></div>
     <div class="nav-item" id="nav-carteira" onclick="goTo('carteira');setNav('carteira')"><div class="nav-ico">💳</div><div class="nav-lbl">Carteira</div></div>
-    <div class="nav-item" id="nav-parceiros" onclick="goTo('parceiros');setNav('parceiros')"><div class="nav-ico">🏪</div><div class="nav-lbl">Parceiros</div></div>
+    <div class="nav-item" id="nav-atendimento" onclick="goTo('atendimento');setNav('atendimento')"><div class="nav-ico">🤝</div><div class="nav-lbl">Serviços</div></div>
     <div class="nav-item" id="nav-perfil" onclick="goTo('perfil');setNav('perfil')"><div class="nav-ico">👤</div><div class="nav-lbl">Perfil</div></div>
   </div>
 
@@ -524,6 +520,21 @@
       <button class="btn-sec" onclick="closeModal('mod-agenda')">Cancelar</button>
     </div>
   </div>
+  <!-- MODAL MEUS AGENDAMENTOS -->
+  <div class="modal-ov" id="mod-agendamentos" onclick="closeModal('mod-agendamentos')">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">🗓️ Agendamentos</div>
+      <h2>Meus agendamentos</h2>
+      <p>Acompanhe e gerencie seus agendamentos de coleta.</p>
+      <div class="section-stack" id="meus-agendamentos-list">
+        <div class="empty-state">Carregando...</div>
+      </div>
+      <button class="btn-primary" onclick="closeModal('mod-agendamentos');openAgenda('ecoponto-central')">+ Novo agendamento</button>
+      <button class="btn-sec" onclick="closeModal('mod-agendamentos')">Fechar</button>
+    </div>
+  </div>
+
 </div>
 
 <script src="api.js"></script>
