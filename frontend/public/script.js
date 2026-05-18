@@ -402,7 +402,7 @@ function removerFotoPerfil() {
 
 function updateHome(user) {
   const nivel = user.nivel ?? 1;
-  const nome = NIVEL_NAMES[nivel] ?? "Iniciante Verde";
+  const nome = user.nome_nivel ?? user.levelTitle ?? NIVEL_NAMES[nivel] ?? "Iniciante Verde";
   document.getElementById("home-nome").innerText = user.nome;
   document.getElementById("home-summary").innerText = `Prontos para usar · ${nome} 🌿`;
   document.getElementById("stat-nivel").innerText = nivel;
@@ -555,6 +555,15 @@ async function loadMissionData() {
       container.innerHTML = '<div class="empty-state">Não foi possível carregar as missões agora.</div>';
     }
   }
+}
+
+async function loadDeliveryCount() {
+  if (!getStoredToken()) return;
+  try {
+    const entregas = await api.getMinhasEntregas();
+    deliveriesCache = entregas;
+    document.getElementById("stat-entregas").innerText = entregas.length;
+  } catch (_) {}
 }
 
 async function loadWalletData() {
@@ -731,7 +740,7 @@ async function carregarSessao() {
   try {
     const user = await api.getMe();
     hydrateUser(user);
-    await Promise.all([loadWalletData(), loadCollectionPoints(), loadPartners(), loadMissionData()]);
+    await Promise.all([loadWalletData(), loadCollectionPoints(), loadPartners(), loadMissionData(), loadDeliveryCount()]);
     return true;
   } catch (error) {
     api.logout();
