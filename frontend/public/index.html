@@ -60,21 +60,9 @@
         <div class="fg"><label>SOBRENOME</label><input type="text" placeholder="Sobrenome" id="c-sob"/></div>
       </div>
       <div class="fg"><label>CPF</label><input type="text" placeholder="000.000.000-00" id="c-cpf" maxlength="14" oninput="mCPF(this)"/></div>
-      <div class="fg"><label>CELULAR</label><input type="text" placeholder="(00) 00000-0000" id="c-tel" maxlength="15" oninput="mTel(this)"/></div>
-      <div class="fg"><label>CEP</label><input type="text" placeholder="00000-000" id="c-cep" maxlength="9" oninput="mCEP(this)"/></div>
-      <div class="fr">
-        <div class="fg"><label>CIDADE</label><input type="text" placeholder="Manaus" id="c-cid"/></div>
-        <div class="fg"><label>ESTADO</label>
-          <select id="c-est">
-            <option>AM</option><option>PA</option><option>RO</option><option>AC</option><option>RR</option>
-            <option>AP</option><option>TO</option><option>SP</option><option>RJ</option><option>MG</option>
-            <option>BA</option><option>PR</option><option>RS</option><option>SC</option><option>GO</option>
-            <option>DF</option><option>MT</option><option>MS</option>
-          </select>
-        </div>
-      </div>
       <div class="fg"><label>E-MAIL</label><input type="email" placeholder="seu@email.com" id="c-email"/></div>
       <div class="fg"><label>SENHA</label><input type="password" placeholder="Mínimo 8 caracteres" id="c-senha"/></div>
+      <div class="fg"><label>CONFIRMAÇÃO DE SENHA</label><input type="password" placeholder="Repita a senha" id="c-senha-conf"/></div>
       <button class="btn-primary" onclick="fazerCadastro()" style="margin-top:6px">Criar minha conta</button>
       <div class="auth-ft" style="margin-top:12px">Já tem conta? <button class="link-btn" onclick="goTo('login')">Entrar</button></div>
     </div>
@@ -217,9 +205,9 @@
         <div class="ic-lbl">DADOS PESSOAIS</div>
         <div class="info-r"><div class="info-ico">👤</div><div><h4 id="p-nome">Nome Completo</h4><p>Nome cadastrado</p></div></div>
         <div class="info-r"><div class="info-ico">📧</div><div><h4 id="p-email">email@email.com</h4><p>E-mail</p></div></div>
-        <div class="info-r"><div class="info-ico">📱</div><div><h4 id="p-tel">(00) 00000-0000</h4><p>Celular</p></div></div>
-        <div class="info-r"><div class="info-ico">📮</div><div><h4 id="p-cep">00000-000</h4><p>CEP cadastrado</p></div></div>
-        <div class="info-r"><div class="info-ico">📍</div><div><h4 id="p-cid">Manaus — AM</h4><p>Localização</p></div></div>
+        <div class="info-r"><div class="info-ico">🆔</div><div><h4 id="p-cpf">000.000.000-00</h4><p>CPF</p></div></div>
+        <div class="info-r" onclick="openPhoneModal()"><div class="info-ico">📱</div><div><h4 id="p-telefone">Não informado</h4><p>Celular</p></div></div>
+        <div class="info-r" onclick="openAddressModal()"><div class="info-ico">📍</div><div><h4 id="p-endereco">Não informado</h4><p>Endereço</p></div></div>
       </div>
       <div class="info-c" style="margin-top:12px">
         <div class="ic-lbl">MINHA CONTA</div>
@@ -296,19 +284,6 @@
         <div class="fg"><label>NOME</label><input type="text" id="up-nome" placeholder="Nome"/></div>
         <div class="fg"><label>SOBRENOME</label><input type="text" id="up-sobrenome" placeholder="Sobrenome"/></div>
       </div>
-      <div class="fg"><label>CELULAR</label><input type="text" id="up-telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mTel(this)"/></div>
-      <div class="fg"><label>CEP</label><input type="text" id="up-cep" placeholder="00000-000" maxlength="9" oninput="mCEP(this)"/></div>
-      <div class="fr">
-        <div class="fg"><label>CIDADE</label><input type="text" id="up-cidade" placeholder="Manaus"/></div>
-        <div class="fg"><label>ESTADO</label>
-          <select id="up-estado">
-            <option>AM</option><option>PA</option><option>RO</option><option>AC</option><option>RR</option>
-            <option>AP</option><option>TO</option><option>SP</option><option>RJ</option><option>MG</option>
-            <option>BA</option><option>PR</option><option>RS</option><option>SC</option><option>GO</option>
-            <option>DF</option><option>MT</option><option>MS</option>
-          </select>
-        </div>
-      </div>
       <div class="fg"><label>E-MAIL</label><input type="email" id="up-email" placeholder="seu@email.com"/></div>
       <div class="fg"><label>SENHA ATUAL</label><input type="password" id="up-senha-atual" placeholder="Obrigatória se alterar o e-mail"/></div>
       <div class="modal-help">Informe a senha atual apenas quando quiser trocar o e-mail.</div>
@@ -329,6 +304,49 @@
       <div class="fg"><label>CONFIRMAR NOVA SENHA</label><input type="password" id="pw-confirmacao" placeholder="Repita a nova senha"/></div>
       <button class="btn-primary" id="pw-save-btn" onclick="alterarSenha()">Atualizar senha</button>
       <button class="btn-sec" onclick="closePasswordModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL ENDEREÇO -->
+  <div class="modal-ov" id="mod-address" onclick="closeAddressModal()">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📍 Endereço</div>
+      <h2>Atualizar endereço</h2>
+      <p>Mantenha seu endereço atualizado para facilitar agendamentos e entregas.</p>
+      <div class="fg"><label>CEP</label><input type="text" id="addr-cep" placeholder="00000-000" maxlength="9" oninput="mCEP(this)" onblur="preencherEnderecoPorCEP()"/></div>
+      <div class="modal-help">💡 Digite o CEP e os campos serão preenchidos automaticamente</div>
+      <div class="fg"><label>RUA</label><input type="text" id="addr-rua" placeholder="Nome da rua"/></div>
+      <div class="fr">
+        <div class="fg"><label>NÚMERO</label><input type="text" id="addr-numero" placeholder="123"/></div>
+        <div class="fg"><label>BAIRRO</label><input type="text" id="addr-bairro" placeholder="Nome do bairro"/></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>CIDADE</label><input type="text" id="addr-cidade" placeholder="Manaus"/></div>
+        <div class="fg"><label>ESTADO</label>
+          <select id="addr-estado">
+            <option>AM</option><option>PA</option><option>RO</option><option>AC</option><option>RR</option>
+            <option>AP</option><option>TO</option><option>SP</option><option>RJ</option><option>MG</option>
+            <option>BA</option><option>PR</option><option>RS</option><option>SC</option><option>GO</option>
+            <option>DF</option><option>MT</option><option>MS</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" id="addr-save-btn" onclick="salvarEndereco()">Salvar endereço</button>
+      <button class="btn-sec" onclick="closeAddressModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- MODAL CELULAR -->
+  <div class="modal-ov" id="mod-phone" onclick="closePhoneModal()">
+    <div class="modal-sh" onclick="event.stopPropagation()">
+      <div class="mhandle"></div>
+      <div class="mtag">📱 Celular</div>
+      <h2>Atualizar celular</h2>
+      <p>Mantenha seu número de celular atualizado para contato.</p>
+      <div class="fg"><label>CELULAR</label><input type="text" id="phone-telefone" placeholder="(00) 00000-0000" maxlength="15" oninput="mTel(this)"/></div>
+      <button class="btn-primary" id="phone-save-btn" onclick="salvarCelular()">Salvar celular</button>
+      <button class="btn-sec" onclick="closePhoneModal()">Cancelar</button>
     </div>
   </div>
 

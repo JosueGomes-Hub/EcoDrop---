@@ -249,6 +249,20 @@ function formatCep(value) {
   return value;
 }
 
+function formatCpf(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+
+  if (!digits) {
+    return "Não informado";
+  }
+
+  if (digits.length === 11) {
+    return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+  }
+
+  return value;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -401,9 +415,25 @@ function updateProfile(user) {
   document.getElementById("perf-nivel").innerText = getLevelLabel(user);
   document.getElementById("p-nome").innerText = fullName;
   document.getElementById("p-email").innerText = user.email;
-  document.getElementById("p-tel").innerText = formatPhone(user.telefone);
-  document.getElementById("p-cep").innerText = formatCep(user.cep);
-  document.getElementById("p-cid").innerText = `${user.cidade || "Cidade"} — ${user.estado || "UF"}`;
+  document.getElementById("p-cpf").innerText = formatCpf(user.cpf);
+  
+  // Formatar celular
+  const phoneText = formatPhone(user.telefone);
+  document.getElementById("p-telefone").innerText = phoneText;
+  
+  // Formatar endereço
+  const addressParts = [];
+  if (user.rua) addressParts.push(user.rua);
+  if (user.numero) addressParts.push(user.numero);
+  if (user.bairro) addressParts.push(user.bairro);
+  if (user.cidade) addressParts.push(user.cidade);
+  if (user.estado) addressParts.push(user.estado);
+  
+  const addressText = addressParts.length > 0 
+    ? addressParts.join(", ") 
+    : "Não informado";
+  document.getElementById("p-endereco").innerText = addressText;
+  
   updateProfilePhoto(user);
 }
 
@@ -1302,10 +1332,6 @@ function openProfileEditModal() {
 
   document.getElementById("up-nome").value = user.nome || "";
   document.getElementById("up-sobrenome").value = user.sobrenome || "";
-  document.getElementById("up-telefone").value = formatPhone(user.telefone) === "Não informado" ? "" : formatPhone(user.telefone);
-  document.getElementById("up-cep").value = formatCep(user.cep) === "Não informado" ? "" : formatCep(user.cep);
-  document.getElementById("up-cidade").value = user.cidade || "";
-  document.getElementById("up-estado").value = user.estado || "AM";
   document.getElementById("up-email").value = user.email || "";
   document.getElementById("up-senha-atual").value = "";
 
@@ -1358,10 +1384,6 @@ async function salvarPerfil() {
   const payload = {
     nome: document.getElementById("up-nome").value,
     sobrenome: document.getElementById("up-sobrenome").value,
-    telefone: document.getElementById("up-telefone").value,
-    cep: document.getElementById("up-cep").value,
-    cidade: document.getElementById("up-cidade").value,
-    estado: document.getElementById("up-estado").value,
     email: nextEmail,
   };
 
@@ -1407,6 +1429,107 @@ async function alterarSenha() {
     showToast(`✅ ${result.message || "Senha atualizada com sucesso."}`);
   } catch (error) {
     showToast(resolveErrorMessage(error, "Não foi possível atualizar sua senha."));
+  } finally {
+    saveButton.disabled = false;
+  }
+}
+
+function openAddressModal() {
+  const user = getProfileFormUser();
+
+  if (!user) {
+    showToast("Faça login para editar seu endereço.");
+    goTo("login");
+    return;
+  }
+
+  document.getElementById("addr-cep").value = formatCep(user.cep) === "Não informado" ? "" : formatCep(user.cep);
+  document.getElementById("addr-rua").value = user.rua || "";
+  document.getElementById("addr-numero").value = user.numero || "";
+  document.getElementById("addr-bairro").value = user.bairro || "";
+  document.getElementById("addr-cidade").value = user.cidade || "";
+  document.getElementById("addr-estado").value = user.estado || "AM";
+
+  openModal("mod-address");
+}
+
+function closeAddressModal() {
+  closeModal("mod-address");
+}
+
+async function salvarEndereco() {
+  if (!getStoredToken()) {
+    showToast("Faça login para atualizar seu endereço.");
+    goTo("login");
+    return;
+  }
+
+  const saveButton = document.getElementById("addr-save-btn");
+  const payload = {
+    cep: document.getElementById("addr-cep").value,
+    rua: document.getElementById("addr-rua").value,
+    numero: document.getElementById("addr-numero").value,
+    bairro: document.getElementById("addr-bairro").value,
+    cidade: document.getElementById("addr-cidade").value,
+    estado: document.getElementById("addr-estado").value,
+  };
+
+  saveButton.disabled = true;
+
+  try {
+    const result = await api.updateMe(payload);
+    saveSession(getStoredToken(), result);
+    hydrateUser(result);
+    await loadCollectionPoints();
+    closeAddressModal();
+    showToast("✅ Endereço atualizado com sucesso.");
+  } catch (error) {
+    showToast(resolveErrorMessage(error, "Não foi possível atualizar o endereço."));
+  } finally {
+    saveButton.disabled = false;
+  }
+}
+
+function openPhoneModal() {
+  const user = getProfileFormUser();
+
+  if (!user) {
+    showToast("Faça login para editar seu celular.");
+    goTo("login");
+    return;
+  }
+
+  document.getElementById("phone-telefone").value = formatPhone(user.telefone) === "Não informado" ? "" : formatPhone(user.telefone);
+
+  openModal("mod-phone");
+}
+
+function closePhoneModal() {
+  closeModal("mod-phone");
+}
+
+async function salvarCelular() {
+  if (!getStoredToken()) {
+    showToast("Faça login para atualizar seu celular.");
+    goTo("login");
+    return;
+  }
+
+  const saveButton = document.getElementById("phone-save-btn");
+  const payload = {
+    telefone: document.getElementById("phone-telefone").value,
+  };
+
+  saveButton.disabled = true;
+
+  try {
+    const result = await api.updateMe(payload);
+    saveSession(getStoredToken(), result);
+    hydrateUser(result);
+    closePhoneModal();
+    showToast("✅ Celular atualizado com sucesso.");
+  } catch (error) {
+    showToast(resolveErrorMessage(error, "Não foi possível atualizar o celular."));
   } finally {
     saveButton.disabled = false;
   }
@@ -1587,16 +1710,21 @@ async function confirmarAgenda() {
 }
 
 async function fazerCadastro() {
+  const senha = document.getElementById("c-senha").value;
+  const confirmacaoSenha = document.getElementById("c-senha-conf").value;
+
+  if (senha !== confirmacaoSenha) {
+    showToast("❌ As senhas não coincidem!");
+    return;
+  }
+
   const payload = {
     nome: document.getElementById("c-nome").value.trim(),
     sobrenome: document.getElementById("c-sob").value.trim(),
     cpf: document.getElementById("c-cpf").value,
-    telefone: document.getElementById("c-tel").value,
-    cep: document.getElementById("c-cep").value,
-    cidade: document.getElementById("c-cid").value.trim(),
-    estado: document.getElementById("c-est").value,
     email: document.getElementById("c-email").value,
-    senha: document.getElementById("c-senha").value,
+    senha: senha,
+    confirmacaoSenha: confirmacaoSenha,
   };
 
   try {
@@ -1651,6 +1779,77 @@ function mCEP(el) {
   el.value = el.value
     .replace(/\D/g, "")
     .replace(/(\d{5})(\d)/, "$1-$2");
+}
+
+async function buscarEnderecoPorCEP(cep) {
+  // Remove caracteres não numéricos
+  const cepLimpo = cep.replace(/\D/g, "");
+  
+  // Valida se o CEP tem 8 dígitos
+  if (cepLimpo.length !== 8) {
+    return null;
+  }
+  
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+    
+    if (!response.ok) {
+      throw new Error("Erro ao buscar CEP");
+    }
+    
+    const data = await response.json();
+    
+    // Verifica se o CEP foi encontrado
+    if (data.erro) {
+      showToast("❌ CEP não encontrado");
+      return null;
+    }
+    
+    return {
+      cep: data.cep,
+      rua: data.logradouro,
+      bairro: data.bairro,
+      cidade: data.localidade,
+      estado: data.uf
+    };
+  } catch (error) {
+    console.error("Erro ao buscar CEP:", error);
+    showToast("❌ Erro ao buscar CEP. Tente novamente.");
+    return null;
+  }
+}
+
+async function preencherEnderecoPorCEP() {
+  const cepInput = document.getElementById("addr-cep");
+  const cep = cepInput.value;
+  
+  // Só busca se o CEP tiver 8 dígitos (sem contar o hífen)
+  const cepLimpo = cep.replace(/\D/g, "");
+  if (cepLimpo.length !== 8) {
+    return;
+  }
+  
+  // Mostra loading
+  const saveButton = document.getElementById("addr-save-btn");
+  const originalText = saveButton.textContent;
+  saveButton.textContent = "🔍 Buscando CEP...";
+  saveButton.disabled = true;
+  
+  const endereco = await buscarEnderecoPorCEP(cep);
+  
+  if (endereco) {
+    // Preenche os campos automaticamente
+    document.getElementById("addr-rua").value = endereco.rua || "";
+    document.getElementById("addr-bairro").value = endereco.bairro || "";
+    document.getElementById("addr-cidade").value = endereco.cidade || "";
+    document.getElementById("addr-estado").value = endereco.estado || "AM";
+    
+    showToast("✅ Endereço encontrado!");
+  }
+  
+  // Remove loading
+  saveButton.textContent = originalText;
+  saveButton.disabled = false;
 }
 
 window.onload = async () => {
