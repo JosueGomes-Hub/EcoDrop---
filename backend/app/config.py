@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     ALLOWED_ORIGINS: str = "http://localhost:3000"
     CORS_ALLOW_ALL: bool = False
+    
+    # Configuração do servidor
+    API_HOST: str = "0.0.0.0"
+    API_PORT: int = 8000
 
     model_config = {"env_file": str(ROOT_DIR / ".env"), "extra": "ignore"}
 

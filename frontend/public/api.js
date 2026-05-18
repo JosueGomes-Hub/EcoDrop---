@@ -77,6 +77,10 @@ const api = {
   // Agendamentos
   async criarAgendamento(dados) { return this._post('/coleta/agendamentos', dados); },
   async getAgendamentos() { return this._get('/coleta/agendamentos'); },
+  async cancelarAgendamento(id) {
+    const res = await fetch(`${API_BASE}/coleta/agendamentos/${id}`, { method: 'DELETE', headers: this._headers() });
+    if (!res.ok) { const d = await res.json().catch(() => ({})); throw { status: res.status, detail: d.detail || 'Erro' }; }
+  },
 
   // Missões
   async getMissoes() { return this._get('/missoes'); },

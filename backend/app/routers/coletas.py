@@ -32,8 +32,20 @@ def criar_agendamento(data: AgendamentoCreate, db: Session = Depends(get_db), cu
 @router.get("/agendamentos", response_model=list[AgendamentoResponse])
 def listar_agendamentos(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     from app.repositories.coleta_repo import coleta_repo
-    from app.schemas.coleta import AgendamentoResponse
-    return [AgendamentoResponse.model_validate(a) for a in coleta_repo.get_agendamentos_by_user(db, current_user.id)]
+    return [AgendamentoResponse.from_orm_with_ponto(a) for a in coleta_repo.get_agendamentos_by_user(db, current_user.id)]
+
+
+@router.delete("/agendamentos/{agendamento_id}", status_code=204)
+def cancelar_agendamento(agendamento_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    from app.models.coleta import Agendamento
+    from fastapi import HTTPException
+    ag = db.get(Agendamento, agendamento_id)
+    if not ag or ag.usuario_id != current_user.id:
+        raise HTTPException(404, "Agendamento não encontrado")
+    if ag.status in ("completed", "cancelled"):
+        raise HTTPException(400, "Agendamento não pode ser cancelado")
+    ag.status = "cancelled"
+    db.commit()
 
 
 @router.put("/agendamentos/{agendamento_id}", response_model=AgendamentoResponse)

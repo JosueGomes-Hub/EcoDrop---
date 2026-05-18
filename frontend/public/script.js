@@ -1007,6 +1007,62 @@ async function loadUserDeliveries() {
   }
 }
 
+async function openMeusAgendamentos() {
+  if (!getStoredToken()) { showToast("Faça login para ver seus agendamentos."); goTo("login"); return; }
+  openModal("mod-agendamentos");
+  await renderMeusAgendamentos();
+}
+
+async function renderMeusAgendamentos() {
+  const container = document.getElementById("meus-agendamentos-list");
+  container.innerHTML = '<div class="empty-state">Carregando...</div>';
+  try {
+    const lista = await api.getAgendamentos();
+    appointmentsCache = lista;
+    if (!lista.length) {
+      container.innerHTML = '<div class="empty-state">Você ainda não tem agendamentos.</div>';
+      return;
+    }
+    const statusLabel = { scheduled: "Agendado", confirmed: "Confirmado", checked_in: "Check-in", completed: "Concluído", cancelled: "Cancelado", missed: "Não compareceu" };
+    const statusColor = { scheduled: "#2e7d32", confirmed: "#1565c0", checked_in: "#e65100", completed: "#555", cancelled: "#c0392b", missed: "#888" };
+    const cancelaveis = ["scheduled", "confirmed"];
+    container.innerHTML = lista.map(a => {
+      const [y, m, d] = a.data_agendada.split("-");
+      const data = `${d}/${m}/${y}`;
+      const inicio = a.janela_inicio.slice(0, 5);
+      const fim = a.janela_fim.slice(0, 5);
+      const cor = statusColor[a.status] || "#555";
+      const label = statusLabel[a.status] || a.status;
+      const btnCancelar = cancelaveis.includes(a.status)
+        ? `<button onclick="cancelarAgendamento(${a.id})" style="margin-top:8px;width:100%;padding:8px;background:#fde8e8;color:#c0392b;border:none;border-radius:8px;font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer">Cancelar agendamento</button>`
+        : "";
+      return `
+        <div style="background:#f9f7f4;border-radius:12px;padding:14px 16px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+            <div style="font-weight:700;font-size:.9rem;color:#0a2e1f">${escapeHtml(a.ponto_nome || "Ponto de coleta")}</div>
+            <span style="font-size:.72rem;font-weight:700;color:${cor};background:${cor}18;padding:3px 10px;border-radius:20px">${label}</span>
+          </div>
+          <div style="font-size:.82rem;color:#555">📅 ${data} · ⏰ ${inicio}–${fim}</div>
+          ${a.observacoes ? `<div style="font-size:.78rem;color:#888;margin-top:4px">📝 ${escapeHtml(a.observacoes)}</div>` : ""}
+          ${btnCancelar}
+        </div>`;
+    }).join("");
+  } catch {
+    container.innerHTML = '<div class="empty-state">Não foi possível carregar seus agendamentos.</div>';
+  }
+}
+
+async function cancelarAgendamento(id) {
+  if (!confirm("Deseja cancelar este agendamento?")) return;
+  try {
+    await api.cancelarAgendamento(id);
+    showToast("Agendamento cancelado.");
+    await renderMeusAgendamentos();
+  } catch (e) {
+    showToast(resolveErrorMessage(e, "Não foi possível cancelar o agendamento."));
+  }
+}
+
 async function openDeliveriesModal() {
   if (!getStoredToken()) {
     showToast("Faça login para acompanhar suas entregas.");
@@ -1414,17 +1470,7 @@ function openPonto(slug) {
 function setChip(element) {
   document.querySelectorAll(".chip").forEach((chip) => chip.classList.remove("active"));
   element.classList.add("active");
-
-  const slugByLabel = {
-    Todos: "",
-    "♻️ Plástico": "plastico",
-    "🔵 Vidro": "vidro",
-    "🥫 Metal": "metal",
-    "📄 Papel": "papel",
-    "🔋 Eletrônico": "eletronico",
-  };
-
-  loadCollectionPoints(slugByLabel[element.innerText] ?? "");
+  loadCollectionPoints(element.dataset.slug || "");
 }
 
 function buildAgendaSlots() {

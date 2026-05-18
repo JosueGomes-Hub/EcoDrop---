@@ -35,6 +35,7 @@ class AgendamentoUpdate(BaseModel):
 class AgendamentoResponse(BaseModel):
     id: int
     ponto_id: int
+    ponto_nome: str = ""
     data_agendada: date
     janela_inicio: time
     janela_fim: time
@@ -42,3 +43,9 @@ class AgendamentoResponse(BaseModel):
     observacoes: str | None
 
     model_config = {"from_attributes": True}
+
+    @classmethod
+    def from_orm_with_ponto(cls, a) -> "AgendamentoResponse":
+        obj = cls.model_validate(a)
+        obj.ponto_nome = a.ponto.nome if a.ponto else ""
+        return obj
